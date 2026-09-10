@@ -48,7 +48,7 @@ def get_sha(gh_path):
 def push(local_path):
     with open(local_path, "rb") as f:
         content = base64.b64encode(f.read()).decode("utf-8")
-    rel = os.path.basename(local_path)
+    rel = os.path.relpath(local_path).replace(os.sep, "/")  # 保留相对路径（支持子目录）
     gh_path = urllib.parse.quote(rel)
     sha = get_sha(gh_path)
     payload = {"message": f"docs: {rel}", "content": content, "branch": BRANCH}
