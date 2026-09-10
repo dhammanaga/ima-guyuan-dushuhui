@@ -36,8 +36,8 @@ def main(src):
     # 3) 删单行
     t = "\n".join(l for l in t.split("\n") if not l.startswith("> ⚠️ 主持人操作："))
     t = "\n".join(l for l in t.split("\n") if not l.startswith("> 主持人："))
-    # 4) W_LEAD → 纯文本
-    t = re.sub(r"<!--W_LEAD-->(.*?)<!--/W_LEAD-->", r"\1", t)
+    # 4) W_LEAD → 纯文本（re.S 支持标记与内容跨行）
+    t = re.sub(r"<!--W_LEAD-->(.*?)<!--/W_LEAD-->", r"\1", t, flags=re.S)
     # 5) 标题与引言
     t = t.replace("（主持人版）", "（学员版）")
     # 在"本周主题"行后插入说明行（仅学员版）
