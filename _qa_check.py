@@ -13,7 +13,7 @@ import glob
 
 BASE = "/sandbox/workspace/新型读书会.大佛寺/第二轮"
 PKG = sys.argv[1] if len(sys.argv) > 1 else BASE + "/交付成果/读书会04_持戒与戒律生活_8周资料包"
-BANNED_F = BASE + "/读书会04素材/_禁用清单_读书会010203已用media_id.txt"
+BANNED_F = os.environ.get("QA_BANNED", BASE + "/读书会04素材/_禁用清单_读书会010203已用media_id.txt")
 ID_RE = re.compile(r"(?:soundrecording|pdf|word)_[a-f0-9]+_[a-f0-9]+")
 SHARE_KEYS = ["共读原文", "主题讨论", "禅修练习", "扩展内容包", "收尾与回向"]
 SKIP = ["主持人", "照读即可", "主持人先看", "共读提要", "请跟随引导",
