@@ -72,7 +72,8 @@ def main():
         hm, sm = smap(sections(ht)), smap(sections(st))
         # 共读原文硬校验：比较"实质原文行"集合（原文引用行/材料标题/信息行），忽略主持人专属引导行
         PREF = ("> [", "### 原文材料", "- **标题**", "- **文件类型**",
-                "- **知识库出处**", "- **media_id**", "- **打开方式**")
+                "- **知识库出处**", "- **media_id**", "- **打开方式**",
+                "### ", "- 标题", "- 文件类型", "- 知识库出处", "- media_id", "- 打开方式")
         def subst(ls):
             return {x for x in ls if x.startswith(PREF)}
         ha, sa = subst(hm.get("共读原文", [])), subst(sm.get("共读原文", []))
