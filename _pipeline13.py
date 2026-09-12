@@ -9,12 +9,14 @@
 终检失败只回传失败行；硬性0失败才算通过。
 """
 import os, sys, glob, subprocess, datetime
+from datetime import timezone, timedelta
 
 BASE = "/sandbox/workspace/新型读书会.大佛寺/第二轮"
 os.chdir(BASE)
 PKG = "交付成果/读书会13_业与轮回_8周资料包"
 BANNED = "读书会13素材/_禁用清单_读书会01-12已用media_id.txt"
-STAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+CST = timezone(timedelta(hours=8))  # 北京时间
+STAMP = datetime.datetime.now(CST).strftime("%Y%m%d_%H%M")
 ZIP = f"{PKG}_{STAMP}_v1.0.zip"
 
 def run(cmd, env=None):
