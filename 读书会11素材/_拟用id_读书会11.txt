@@ -1,0 +1,41 @@
+# _拟用id_读书会11.txt
+# 用途：并行开工前的跨机共享互查文件（依《任务需求文档 v2.3》第七节）。他机（12 线及后续）制作前请对照本清单避免撞段。
+# 生成时间：2026-09-12 14:05（北京时间）｜生成机：本机（11线专职）
+# 格式：id ｜ 周 ｜ 材料 ｜ 禁用清单命中情况与裁决（v2.3 段落级）
+# 查重基线：读书会11素材/_禁用清单_读书会01-10已用media_id.txt（436 个 id）
+
+# ============ 命中项（7 个，均已在 01-10 出现，按 v2.3 段落级可复用，须取不同段落/换版本）============
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_0442f0ce224e1491e90a026d895b391e ｜ W1/W5 ｜ 摄缘.pdf（讲义） ｜ HIT（仅出现在 审核工作区/文档全文.txt，非交付照录）→ 可复用
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_acfe2664d6531228cd859d81aa22636c ｜ W1/W8 ｜ 观察缘起-帕奥禅师 ｜ HIT（08线W7取「无明/烦恼轮转」段）→ 本线取「缘起观察方法/三世因果/解脱」段，不同段落
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_1c3be451335fd73cfe2cb0a714e90215 ｜ W5/W6 ｜ 阿毗达摩讲要(下) ｜ HIT（04线W1取「戒」段）→ 本线取「有支/结生/五蕴衰变」段，不同段落
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_3d0489e9e011559e25bfe4e83ddd15b3 ｜ W7/W8 ｜ 二阶_摄集_汇总讲义153-196讲 ｜ HIT（09线W4取「道谛/八圣道」段）→ 本线取「三十七道品总纲」段，不同段落
+soundrecording_d0dd1c0cd17209afe241ece24bf6b7b4_a2b3e82bb3ff548efb977ad631492961 ｜ W2 ｜ 突破生命的束缚4（音声） ｜ HIT（仅出现在 交付成果/替换清单_第一批.md，非实际照录）→ 可复用
+word_d0dd1c0cd17209afe241ece24bf6b7b4_76a81259305d0220abe6938e678d4a0f ｜ W6/W7 ｜ 第81讲·杂论1.docx ｜ HIT（仅出现在 审核工作区/文档全文.txt，非交付照录）→ 可复用
+# 说明：另有《第9讲-摄缘·缘起支4》PDF 版（pdf_…4fc7b047）为 HIT（08线W7用），本线**不采用该版本**，改用其音声版（见下），故不计入。
+
+# ============ 未命中项（free，可直接使用）============
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_139d15afe65f4c03ebae1b1fc93ebc38 ｜ W1 ｜ 第1讲·缘概说1（共修版） ｜ free
+soundrecording_d0dd1c0cd17209afe241ece24bf6b7b4_d375fc766617b044d2179bdbf680677a ｜ W1 ｜ 第1讲音声 ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_7b8e6865c4cbd4d2936dc5f539d05547 ｜ W2 ｜ 第7讲·缘起支2（共修版） ｜ free
+soundrecording_d0dd1c0cd17209afe241ece24bf6b7b4_071c75f4fe8c849ae1adffabdaed2ddc ｜ W2 ｜ 第9讲·缘起支4（音声） ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_03916b0fafb7120142aa4e1ef83d5163 ｜ W3 ｜ 第66讲·行缘识1 ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_a153853a47240e816d66cc88a8036b50 ｜ W3 ｜ 第67讲·行缘识2 ｜ free
+word_d0dd1c0cd17209afe241ece24bf6b7b4_85d8159ee245a18bd9e00f2d6ee6549f ｜ W3 ｜ 第68讲·行缘识3.docx ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_f3967413c46f601346b895cd943c0a32 ｜ W3 ｜ 第59讲·名色与缘（共修版） ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_4435c6a94fbbdb6a6e16d24327b1a8f7 ｜ W4 ｜ 第59讲·名色与缘（另一版本） ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_d2642a91f2a5654a9d6b13cae305fb8e ｜ W4 ｜ 第62讲·五门意门心路与无明缘行1 ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_de7b224cd652c67caf445c5430084075 ｜ W4 ｜ 界论 Dhātukathāpāḷi ｜ free
+word_d0dd1c0cd17209afe241ece24bf6b7b4_c315560c54b28f3d212fe44c79541d89 ｜ W5 ｜ 第77讲·受缘爱&爱缘取1.docx ｜ free
+word_d0dd1c0cd17209afe241ece24bf6b7b4_ea5f9eb1e09da01e5e7394b4f62170f1 ｜ W5 ｜ 第78讲·爱缘取2.docx ｜ free
+soundrecording_d0dd1c0cd17209afe241ece24bf6b7b4_9146991c56386b27609c21b8fa68a67c ｜ W6 ｜ 第81讲·杂论1（音声） ｜ free
+soundrecording_d0dd1c0cd17209afe241ece24bf6b7b4_1da8aba9b90f54612fdf1c6827c4b9af ｜ W7/W8 ｜ 第82讲·杂论2（音声） ｜ free
+word_d0dd1c0cd17209afe241ece24bf6b7b4_147932923a35388411a9762fd98e3a31 ｜ W7/W8 ｜ 第82讲·杂论2.docx ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_108a54e43ddec1bd487176e1a8d26567 ｜ W1/W6 ｜ 因缘品 Nidānavaggapāḷi ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_f61e99f7e77677ce1e020ad39ec3f52d ｜ W8 ｜ 因缘品复注 Nidānavagga-Ṭīkā ｜ free
+pdf_d0dd1c0cd17209afe241ece24bf6b7b4_2792b72b9a2ebe23eed106ceae86feb5 ｜ W2/W4 ｜ 阿毗达摩概要精解 ｜ free
+# 另备（未列入周计划，供补充取材）：因缘品复注、界论、分别论、清净道论、摄阿毗达摩义论 等，详见蓝图第三节素材调研。
+
+# ============ 跨机约定 ============
+# 1. 12 线（缘起深入与二十四缘）与本线同属缘起主题：二十四缘/道缘各缘展开归 12，本线 11 不展开。
+# 2. 他机如拟用本清单中任一 id，请按 v2.3 段落级核验（同文件不同段落即可）。
+# 3. 本文件更新请错峰：更新前先 GET 远端最新版合并再推送，避免覆盖他机记录。
