@@ -5,6 +5,8 @@
 用法: python3 _gen_yuanwen13.py
 """
 import os, re, glob, datetime
+from datetime import timezone, timedelta
+CST = timezone(timedelta(hours=8))  # 北京时间
 
 BASE = "/sandbox/workspace/新型读书会.大佛寺/第二轮"
 SRC = sorted(glob.glob(os.path.join(BASE, "读书会13素材/第*周_素材照录.md")),
@@ -25,7 +27,7 @@ WEEK_TITLE = {
 def main():
     parts = [
         "# 📖 读书会13《业与轮回》原文全集\n",
-        f"\n> 📅 最近更新：{datetime.datetime.now():%Y-%m-%d %H:%M}　|　由8份《第X周_素材照录.md》脚本化聚合生成（零LLM，逐字保真）\n",
+        f"\n> 📅 最近更新：{datetime.datetime.now(CST):%Y-%m-%d %H:%M}（北京时间）　|　由8份《第X周_素材照录.md》脚本化聚合生成（零LLM，逐字保真）\n",
         "> 用途：共读原文的单一检索底本；正文逐字取自知识库 fetch 返回，`[generated, not original text]` 标注与缺口说明照实保留。\n",
         "> 打开方式：ima 知识库「古源尊者开示及上座部佛教资料」搜索材料标题；media_id 均为完整串。\n",
     ]
