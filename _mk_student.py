@@ -76,7 +76,8 @@ def main(src, dst=None):
         t = t.rstrip() + "\n\n---\n\n" + ext + "\n"
     if not dst:
         dst = src.replace("主持人版", "学员版")
-    open(dst, "w", encoding="utf-8").write(t)
+    with open(dst, "w", encoding="utf-8") as f:
+        f.write(t)
     print(f"✅ 学员版已生成: {dst}（{len(t)} 字符）")
 
 
