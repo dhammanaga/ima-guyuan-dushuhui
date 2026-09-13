@@ -29,22 +29,27 @@ def check_file(path):
         txt = f.read()
     fails, warns = [], []
 
-    # 1) 时间封顶
-    secs = [int(x) for x in SEC_RE.findall(txt)]
-    total_decl = [int(x) for x in TOTAL_RE.findall(txt)]
-    if secs:
-        s = sum(secs)
-        if s > MAX_TOTAL:
-            fails.append("环节时长之和 = %d 分钟 > %d（超 %d 分钟）" % (s, MAX_TOTAL, s - MAX_TOTAL))
-        if total_decl and s != total_decl[0]:
-            fails.append("环节之和 = %d，与声明总时长 = %d 不一致" % (s, total_decl[0]))
-    else:
-        warns.append("未解析到环节时长（格式应为 如『（10 min）』）")
+    # 仅对"周文档"（文件名含"第N周"）做时间封顶与环节齐备硬校验；
+    # 参考性文件（原文全集 / README / CHANGELOG / 总指南等）只做提醒，不做硬失败。
+    is_week = bool(re.search(r"第\s*\d+\s*周", os.path.basename(path)))
+    secs = [int(x) for x in SEC_RE.findall(txt)] if is_week else []
 
-    # 2) 环节齐备
-    missing = [k for k in REQUIRED_SECTIONS if k not in txt]
-    if missing:
-        fails.append("缺少环节：" + " / ".join(missing))
+    # 1) 时间封顶
+    if is_week:
+        total_decl = [int(x) for x in TOTAL_RE.findall(txt)]
+        if secs:
+            s = sum(secs)
+            if s > MAX_TOTAL:
+                fails.append("环节时长之和 = %d 分钟 > %d（超 %d 分钟）" % (s, MAX_TOTAL, s - MAX_TOTAL))
+            if total_decl and s != total_decl[0]:
+                fails.append("环节之和 = %d，与声明总时长 = %d 不一致" % (s, total_decl[0]))
+        else:
+            warns.append("未解析到环节时长（格式应为 如『（10 min）』）")
+
+        # 2) 环节齐备
+        missing = [k for k in REQUIRED_SECTIONS if k not in txt]
+        if missing:
+            fails.append("缺少环节：" + " / ".join(missing))
 
     # 3) 安全声明
     ms = [k for k in SAFETY_KEYWORDS if k not in txt]
