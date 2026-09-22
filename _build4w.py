@@ -32,7 +32,7 @@ def build(nn, dozip=False):
     ok = (c1 == 0 and c2 == 0)
     if dozip:
         ts = datetime.datetime.now(CST).strftime("%Y%m%d_%H%M")
-        z = os.path.join(pkg, f"读书会{nn:02d}_{cfg['name']}_4周资料包（第三版修订）_{ts}_v1.0.zip")
+        z = os.path.join(pkg, f"读书会{nn:02d}_{cfg['name']}_4周资料包（第三版修订）_{ts}_v3.0.zip")
         n = 0
         with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
             for root, _d, files in os.walk(pkg):
