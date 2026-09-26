@@ -7,7 +7,7 @@ import re, sys
 
 BASE = "/sandbox/workspace/新型读书会.大佛寺/第二轮/"
 SRC = BASE + "读书会06素材/第4周_素材照录.md"
-DOC = BASE + "交付成果/读书会06_四念处（一）身念处_8周资料包/"
+DOC = BASE + "交付成果/读书会06_四念处（一）身念处与受念处_8周资料包/"
 
 src = open(SRC, encoding='utf-8').read()
 

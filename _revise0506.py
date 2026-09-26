@@ -13,7 +13,7 @@ SERIES = {
     "05": dict(src=os.path.join(BASE, "pkg05"), dst=os.path.join(BASE, "out05"),
                title="日常生活中的正念正知"),
     "06": dict(src=os.path.join(BASE, "pkg06"), dst=os.path.join(BASE, "out06"),
-               title="四念处（一）身念处"),
+               title="四念处（一）身念处与受念处"),
 }
 
 ICE = {
