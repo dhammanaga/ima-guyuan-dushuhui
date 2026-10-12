@@ -31,6 +31,7 @@ push_via_api.py —— 坏索引仓库的推送通道（2026-10-12 实战沉淀�
 import base64, hashlib, json, os, subprocess, sys, time
 
 REPO = "dhammanaga/ima-guyuan-dushuhui"
+REPO_DIR = r"C:\Users\27659\AppData\Local\Temp\dsh\dsrepo"
 GCM = r"D:\Program Files\WorkBuddy\resources\vendor\PortableGit\mingw64\bin\git-credential-manager.exe"
 PROXY = "http://127.0.0.1:7892"
 API = "https://api.github.com"
@@ -86,7 +87,7 @@ def curl(args, data=None):
 
 
 def git(*a):
-    return subprocess.run(["git", "-C", r"D:\tmp\repo"] + list(a),
+    return subprocess.run(["git", "-C", REPO_DIR] + list(a),
                           capture_output=True).stdout.decode("utf-8", "replace")
 
 
@@ -108,7 +109,7 @@ def main():
     # 2. 逐文件建 blob
     entries = []
     for f in ups:
-        full = os.path.join(r"D:\tmp\repo", f.replace("/", os.sep))
+        full = os.path.join(REPO_DIR, f.replace("/", os.sep))
         if not os.path.exists(full):
             print("  ?? 本地不存在，跳过：%s" % os.path.basename(f)); continue
         raw = open(full, "rb").read()
