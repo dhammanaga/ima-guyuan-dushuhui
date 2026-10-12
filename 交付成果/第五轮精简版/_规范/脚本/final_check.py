@@ -66,6 +66,14 @@ def check(path):
                             '（差 %.0f 分钟）→ 须改为「📅 最近更新：%s %s」'
                             % (got_d, got_t, want_d, want_t, delta, want_d, want_t))
 
+    # ⑥ 代码块围栏（```）必须成对：未闭合会把后面所有 ## 标题吞进代码块，
+    #    导致 GitHub 目录只剩前几个环节（2026-10-15 实际发生）
+    fences = [i + 1 for i, ln in enumerate(s.split('\n')) if ln.strip().startswith('```')]
+    if len(fences) % 2 != 0:
+        problems.append('⑥ 代码块围栏 ``` 共 %d 个（行 %s）→ 奇数个未闭合；'
+                        '未闭合的代码块会吞掉其后的全部 ## 标题，GitHub 目录会缺失环节'
+                        % (len(fences), fences))
+
     # 附：节内混用 ## 会让 count_spoken 字数静默归零（skill §15.7）
     import importlib.util
     spec = importlib.util.spec_from_file_location(
