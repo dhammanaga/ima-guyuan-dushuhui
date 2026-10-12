@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>读书会11 第1周 · 覆盖矩阵终检看板</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+background:#f5f6f8;color:#1c1f23;padding:28px 20px 60px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:25px;font-weight:700;letter-spacing:.5px}
+.sub{color:#5c6470;font-size:13.5px;margin-top:6px}
+.banner{margin:20px 0 26px;padding:18px 22px;border-radius:12px;
+background:linear-gradient(135deg,#e8f7ee,#f0f9f3);border:1px solid #b7e4c7;
+display:flex;flex-wrap:wrap;gap:26px;align-items:center}
+.banner .big{font-size:32px;font-weight:800;color:#1f7a44;letter-spacing:-.5px}
+.banner .lbl{font-size:12.5px;color:#4a6b58;margin-top:2px}
+.sep{width:1px;height:44px;background:#c5e0d0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:26px}
+.kpi{background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:14px 16px}
+.kpi .n{font-size:22px;font-weight:700}
+.kpi .t{font-size:12.5px;color:#66707d;margin-top:3px}
+h2{font-size:16.5px;margin:30px 0 12px;padding-left:10px;border-left:4px solid #2f6fed}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;
+box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:13.5px}
+th{background:#f0f2f5;text-align:left;padding:10px 12px;font-weight:600;font-size:12.5px;color:#3a424d;border-bottom:1px solid #e4e7ec}
+td{padding:9px 12px;border-bottom:1px solid #f0f2f5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#5c6470}
+.v{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.v3{background:#e3f6ea;color:#1f7a44;border:1px solid #b7e4c7}
+.v2{background:#fff4e0;color:#a86a12;border:1px solid #f5d9a8}
+.v1{background:#fdeaea;color:#b02a2a;border:1px solid #f5bcbc}
+.v0{background:#f0f2f5;color:#66707d;border:1px solid #dde1e6}
+.hit{font-size:11.5px;color:#4a6b58;background:#f2f8f4;border-radius:5px;padding:2px 7px;margin-right:4px;display:inline-block;margin-bottom:2px}
+.hit.miss{color:#b02a2a;background:#fdeaea}
+.note{margin-top:26px;background:#fff;border:1px solid #e4e7ec;border-radius:10px;padding:18px 22px;font-size:13px;color:#3a424d}
+.note h3{font-size:14px;margin-bottom:9px;color:#1c1f23}
+.note li{margin:5px 0 5px 20px}
+.warn{background:#fffaf0;border-color:#f5d9a8}
+code{background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:12px}
+</style></head><body><div class="wrap">
+<h1>读书会11《十二缘起》第1周 · 原子级覆盖矩阵终检</h1>
+<div class="sub">判定域 = 共读原文1 + 共读原文2（讲解本体 8,308 字）｜导航层与延伸阅读不计入判定</div>
+
+<div class="banner">
+  <div><div class="big">35/35</div><div class="lbl">原子知识点全覆盖</div></div>
+  <div class="sep"></div>
+  <div><div class="big">0</div><div class="lbl">未覆盖缺口</div></div>
+  <div class="sep"></div>
+  <div><div class="big">✓ 合规</div><div class="lbl">count_spoken.py 0 违规</div></div>
+  <div class="sep"></div>
+  <div><div class="big">3596 / 3572</div><div class="lbl">共读1 / 共读2 字数（上限 3600）</div></div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="n" style="color:#1f7a44">35</div><div class="t">● 完整清晰</div></div>
+  <div class="kpi"><div class="n" style="color:#a86a12">0</div><div class="t">◐ 完整但晦涩</div></div>
+  <div class="kpi"><div class="n" style="color:#b02a2a">0</div><div class="t">○ 部分覆盖</div></div>
+  <div class="kpi"><div class="n" style="color:#66707d">0</div><div class="t">✗ 未覆盖</div></div>
+</div>
+
+<h2>共读原文1 承载（24 个原子点）</h2>
+<div id="t1"></div>
+<h2>共读原文2 承载（11 个原子点）</h2>
+<div id="t2"></div>
+
+<div class="note warn">
+<h3>⚠ 两处「关键词 0 命中」经回原文核对，均为异写误判（非真实缺口）</h3>
+<ul>
+<li><b>K26</b>「非笨非坏」：关键词写 <code>非「笨」</code>，原文实为 <b>「无明不是『笨』，也不是『坏』」</b> → 已改关键词，命中 4/4</li>
+<li><b>K07</b>「二十四缘嵌在十二支里」：关键词写 <code>嵌在十二支</code>，原文实为 <b>「二十四缘是嵌在十二缘起支里的」</b> → 已改关键词，命中 2/2</li>
+</ul>
+<div style="margin-top:10px;color:#8a6d1a">→ 印证铁律：<b>关键词 0 命中 ≠ 缺失，必须回原文核对异写</b>。</div>
+</div>
+
+<div class="note">
+<h3>本次修复动作</h3>
+<ul>
+<li>清理 2 处连续分隔线残留（4 连 + 2 连）→ 结构恢复干净，13 个二级节</li>
+<li>确认全篇仅 1 个「收尾与回向」节，无重复收尾</li>
+<li>巴利方括号术语保真：全文 36 处方括号配对平衡，<code>[āsava]</code> 等术语完整保留</li>
+<li>补写点位关键词落地核验：K01–K03（因缘/缘起/诸法/根本）、K25–K26（八处无知/遮蔽）、K32–K35（顺观/逆观/藤/三处削/中间至末端/中间至开端）全部 ≥1 命中</li>
+</ul>
+</div>
+</div>
+<script>
+const D=[{"code": "K01", "name": "缘起＝条件在相续，非「谁在决定」", "kws": ["条件在相续", "谁在决定"], "hits": ["条件在相续", "谁在决定"], "v": 3}, {"code": "K02", "name": "经句「此有故彼有，此生故彼生」", "kws": ["此有故彼有", "此生故彼生"], "hits": ["此有故彼有", "此生故彼生"], "v": 3}, {"code": "K03", "name": "见缘起即见法", "kws": ["见缘起即见法", "见法"], "hits": ["见缘起即见法", "见法"], "v": 3}, {"code": "K04", "name": "三重观察：观察·相续·可变", "kws": ["观察", "相续", "可变"], "hits": ["观察", "相续", "可变"], "v": 3}, {"code": "K05", "name": "缘起法（十二支）", "kws": ["缘起法"], "hits": ["缘起法"], "v": 3}, {"code": "K06", "name": "发趣法（二十四缘）", "kws": ["发趣法"], "hits": ["发趣法"], "v": 3}, {"code": "K07", "name": "二十四缘嵌在十二支里（两法一体）", "kws": ["嵌在十二缘起支里", "嵌在"], "hits": ["嵌在十二缘起支里", "嵌在"], "v": 3}, {"code": "K08", "name": "三种遍知：所知·度·断", "kws": ["三种遍知", "所知", "度", "断"], "hits": ["三种遍知", "所知", "度", "断"], "v": 3}, {"code": "K09", "name": "随觉智 vs 通达智", "kws": ["随觉智", "通达智"], "hits": ["随觉智", "通达智"], "v": 3}, {"code": "K10", "name": "阿难言浅显、佛陀当场纠正", "kws": ["阿难", "浅显"], "hits": ["阿难", "浅显"], "v": 3}, {"code": "K11", "name": "七类法总纲", "kws": ["七类法"], "hits": ["七类法"], "v": 3}, {"code": "K12", "name": "十二支名相（无明…老死）", "kws": ["十二支"], "hits": ["十二支"], "v": 3}, {"code": "K13", "name": "三时：过去·现在·未来", "kws": ["三时"], "hits": ["三时"], "v": 3}, {"code": "K14", "name": "三连结（行-识/受-爱/业有-生有）", "kws": ["三连结"], "hits": ["三连结"], "v": 3}, {"code": "K15", "name": "二十种行相", "kws": ["二十行相"], "hits": ["二十行相"], "v": 3}, {"code": "K16", "name": "四摄类", "kws": ["四摄类"], "hits": ["四摄类"], "v": 3}, {"code": "K17", "name": "三轮转（烦恼/业/果报轮转）", "kws": ["三轮转"], "hits": ["三轮转"], "v": 3}, {"code": "K18", "name": "二根本（无明·爱）", "kws": ["二根本"], "hits": ["二根本"], "v": 3}, {"code": "K19", "name": "顺观", "kws": ["顺观"], "hits": ["顺观"], "v": 3}, {"code": "K20", "name": "逆观", "kws": ["逆观"], "hits": ["逆观"], "v": 3}, {"code": "K21", "name": "从中间至开端 / 至末端", "kws": ["从中间", "至开端", "至末端"], "hits": ["从中间", "至开端", "至末端"], "v": 3}, {"code": "K22", "name": "藤喻：藤的三处削（根·上·中部）", "kws": ["藤", "三处削", "从根", "从上", "从中部"], "hits": ["藤", "三处削", "从根", "从上", "从中部"], "v": 3}, {"code": "K23", "name": "无明＝对真相的不知", "kws": ["对真相的不知"], "hits": ["对真相的不知"], "v": 3}, {"code": "K24", "name": "不知四圣谛", "kws": ["四圣谛", "四谛"], "hits": ["四圣谛", "四谛"], "v": 3}, {"code": "K25", "name": "不知八处", "kws": ["八处"], "hits": ["八处"], "v": 3}, {"code": "K26", "name": "非「笨」非「坏」", "kws": ["不是「笨」", "也不是「坏」", "笨", "坏"], "hits": ["不是「笨」", "也不是「坏」", "笨", "坏"], "v": 3}, {"code": "K27", "name": "无明七义（七义逐条）", "kws": ["七义", "遮蔽", "有那不该有"], "hits": ["七义", "遮蔽", "有那不该有"], "v": 3}, {"code": "K28", "name": "因漏集起故，无明集起", "kws": ["因漏", "集起故"], "hits": ["因漏", "集起故"], "v": 3}, {"code": "K29", "name": "无明与邪见", "kws": ["邪见"], "hits": ["邪见"], "v": 3}, {"code": "K30", "name": "无明为首（至恶趣）", "kws": ["无明为首", "至恶趣", "恶趣"], "hits": ["无明为首", "至恶趣", "恶趣"], "v": 3}, {"code": "K31", "name": "有爱为首（至善趣）", "kws": ["有爱为首", "至善趣", "善趣"], "hits": ["有爱为首", "至善趣", "善趣"], "v": 3}, {"code": "K32", "name": "根本无明（阿罗汉方断）", "kws": ["根本无明"], "hits": ["根本无明"], "v": 3}, {"code": "K33", "name": "枝末无明（当下可断）", "kws": ["枝末无明"], "hits": ["枝末无明"], "v": 3}, {"code": "K34", "name": "从四圣谛角度看问题", "kws": ["四圣谛", "四谛"], "hits": ["四圣谛", "四谛"], "v": 3}, {"code": "K35", "name": "每个当下都是苦谛·无常·可改变", "kws": ["苦谛", "无常", "可以改变", "可改变"], "hits": ["苦谛", "无常", "可以改变", "可改变"], "v": 3}];
+const T=(list,el)=>{let h='<table><thead><tr><th style="width:64px">编号</th><th>原子知识点</th><th style="width:120px">判定</th><th>讲解本体命中关键词</th></tr></thead><tbody>';
+list.forEach(r=>{const lv={3:['v3','● 完整清晰'],2:['v2','◐ 完整但晦涩'],1:['v1','○ 部分覆盖'],0:['v0','✗ 未覆盖']}[r.v];
+h+=`<tr><td class="code">${r.code}</td><td>${r.name}</td><td><span class="v ${lv[0]}">${lv[1]}</span></td><td>`+
+(r.hits.length?r.hits.map(k=>`<span class="hit">${k}</span>`).join(''):'<span class="hit miss">0 命中</span>')+`</td></tr>`;});
+h+='</tbody></table>';document.getElementById(el).innerHTML=h;};
+T(D.filter(r=>['K01','K02','K03','K04','K05','K06','K07','K08','K09','K10','K11','K12','K13','K14','K15','K16','K17','K18','K23','K24','K25','K26','K27','K28'].includes(r.code)),'t1');
+T(D.filter(r=>['K19','K20','K21','K22','K29','K30','K31','K32','K33','K34','K35'].includes(r.code)),'t2');
+</script></body></html>
