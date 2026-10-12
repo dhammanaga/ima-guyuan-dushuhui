@@ -47,6 +47,25 @@ def check(path):
     if n_ff:
         problems.append('④ U+FFFD 编码损坏 %d 处 → 需还原为正确汉字' % n_ff)
 
+    # ⑤ 时间戳：第 1 行「📅 最近更新：YYYY-MM-DD HH:MM」必须与文件 mtime 同期
+    #    尊者反复强调：任何改稿后必须更新时间戳。此项由 --fix-stamp 自动改。
+    m = re.search(r'📅\s*最近更新：\s*(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})', s)
+    if not m:
+        problems.append('⑤ 缺时间戳：第 1 行须为 '
+                        '<div align="right">📅 最近更新：YYYY-MM-DD HH:MM　|　第5版精修（朗读优化版）</div>')
+    else:
+        import datetime
+        mt = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+        want_d, want_t = mt.strftime('%Y-%m-%d'), mt.strftime('%H:%M')
+        got_d, got_t = m.group(1), m.group(2)
+        # 允许 0 分钟差（同分钟内编辑）；超过 2 分钟即视为未更新
+        delta = abs((mt - datetime.datetime.strptime(
+            '%s %s' % (got_d, got_t), '%Y-%m-%d %H:%M')).total_seconds()) / 60
+        if delta > 2:
+            problems.append('⑤ 时间戳未更新：文件内 %s %s，文件最后修改 %s %s'
+                            '（差 %.0f 分钟）→ 须改为「📅 最近更新：%s %s」'
+                            % (got_d, got_t, want_d, want_t, delta, want_d, want_t))
+
     # 附：节内混用 ## 会让 count_spoken 字数静默归零（skill §15.7）
     import importlib.util
     spec = importlib.util.spec_from_file_location(
@@ -83,15 +102,60 @@ def check(path):
         for x in problems:
             print('  ✗ ' + x)
     else:
-        print('  ✓ 四项必查 + 回向/收尾/地图/div 全部通过')
+        print('  ✓ 五项必查 + 回向/收尾/地图/div 全部通过')
     return len(problems)
+
+
+def fix_stamp(path, stamp=None):
+    """把第 1 行时间戳改为指定时间（默认取当前时间）。
+
+    ★尊者铁律：任何改稿后必须更新时间戳。用法：
+        python final_check.py --fix-stamp <文件.md> [<文件.md> …]
+    只替换「📅 最近更新：YYYY-MM-DD HH:MM」这一段，其余字节不动
+    （避免 [^<]* 之类的正则吃掉 '　|　第5版精修' 分隔符，见 skill §11）。
+    """
+    import datetime
+    if stamp is None:
+        stamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    raw = open(path, encoding='utf-8', newline='').read()
+    nl = '\r\n' if '\r\n' in raw else '\n'
+    lines = raw.replace('\r\n', '\n').split('\n')
+    m = re.search(r'(📅\s*最近更新：\s*)\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}', lines[0])
+    if not m:
+        print('  ✗ %s 第 1 行无时间戳，无法自动修（须手工补）' % os.path.basename(path))
+        return 1
+    old = lines[0]
+    lines[0] = old[:m.start()] + m.group(1) + stamp + old[m.end():]
+    open(path, 'w', encoding='utf-8', newline='').write(nl.join(lines))
+    print('  ✓ %s  时间戳 → %s' % (os.path.basename(path), stamp))
+    return 0
 
 
 if __name__ == '__main__':
     args = sys.argv[1:]
+    if args and args[0] == '--fix-stamp':
+        rest = args[1:]
+        stamp = None
+        if rest and rest[0].startswith('--at='):
+            stamp = rest[0][5:]
+            rest = rest[1:]
+        files = []
+        for a in rest:
+            if os.path.isdir(a):
+                files += [os.path.join(a, f) for f in sorted(os.listdir(a)) if f.endswith('.md')]
+            else:
+                files.append(a)
+        if not files:
+            print('用法：python final_check.py --fix-stamp [--at=YYYY-MM-DD HH:MM] <文件.md|目录> …')
+            sys.exit(2)
+        rc = 0
+        for f in files:
+            rc += fix_stamp(f, stamp)
+        sys.exit(1 if rc else 0)
     if not args:
-        print('用法：python final_check.py <文件.md> [<文件.md> …]')
+        print('用法：python final_check.py <文件.md|目录> [<文件.md|目录> …]')
         print('      也接受目录参数（自动扫描该目录下所有 *.md）')
+        print('      自动修时间戳：python final_check.py --fix-stamp <文件.md|目录> …')
         sys.exit(2)
     # 目录参数 → 展开为该目录下的 *.md
     files = []
