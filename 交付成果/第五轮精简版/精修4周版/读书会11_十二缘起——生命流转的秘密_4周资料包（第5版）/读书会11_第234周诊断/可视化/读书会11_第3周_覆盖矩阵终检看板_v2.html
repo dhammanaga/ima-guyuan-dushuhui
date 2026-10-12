@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>读书会11 · 第3周 覆盖矩阵终检看板 v2</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --card:#ffffff; --ink:#1f1e1c; --muted:#6b6a66;
+    --line:rgba(0,0,0,.10); --ok:#3B6D11; --okbg:#EAF3DE; --bad:#A32D2D; --badbg:#FCEBEB;
+    --amber:#854F0B; --amberbg:#FAEEDA; --blue:#185FA5; --bluebg:#E6F1FB;
+    --teal:#0F6E56; --tealbg:#E1F5EE; --purple:#534AB7; --purplebg:#EEEDFE;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:13px;line-height:1.6;padding:28px 20px 60px}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:19px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 22px}
+  h2{font-size:15px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .n{display:inline-flex;width:20px;height:20px;border-radius:5px;background:var(--ink);color:#fff;
+    font-size:11px;align-items:center;justify-content:center;font-weight:600}
+  .card{background:var(--card);border:.5px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .metric{background:#faf9f6;border-radius:8px;padding:12px 14px}
+  .metric .lbl{font-size:11.5px;color:var(--muted);margin-bottom:3px}
+  .metric .num{font-size:23px;font-weight:600;line-height:1.15}
+  .metric .num small{font-size:13px;font-weight:400;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+  th,td{padding:6px 8px;border-bottom:.5px solid var(--line);text-align:left;vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:11.5px;background:#faf9f6}
+  td.c,th.c{text-align:center}
+  .badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+  .b-ok{background:var(--okbg);color:var(--ok)}
+  .b-bad{background:var(--badbg);color:var(--bad)}
+  .b-amber{background:var(--amberbg);color:var(--amber)}
+  .b-blue{background:var(--bluebg);color:var(--blue)}
+  .b-teal{background:var(--tealbg);color:var(--teal)}
+  .b-purple{background:var(--purplebg);color:var(--purple)}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:4px 14px;font-size:12.5px}
+  .kv dt{color:var(--muted)}
+  .bar{height:16px;border-radius:4px;background:#eeede9;overflow:hidden;position:relative}
+  .bar > i{display:block;height:100%;background:var(--ok)}
+  .bar.warn > i{background:#EF9F27}
+  .rowbar{display:grid;grid-template-columns:132px 1fr 96px;gap:10px;align-items:center;margin-bottom:7px}
+  .rowbar .t{font-size:12px;color:var(--muted)}
+  .rowbar .v{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+  ul.tight{margin:0;padding-left:18px}
+  ul.tight li{margin-bottom:5px}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:.5px dashed var(--line)}
+  .k26{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-top:6px}
+  .k26 .cell{aspect-ratio:1;border-radius:5px;background:var(--okbg);color:var(--ok);
+    display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;border:.5px solid rgba(59,109,17,.18)}
+  .k26 .cell.miss{background:var(--badbg);color:var(--bad);border-color:rgba(163,45,45,.2)}
+  .foot{color:var(--muted);font-size:11.5px;text-align:center;margin-top:26px}
+  @media(max-width:720px){.grid4{grid-template-columns:repeat(2,1fr)}.k26{grid-template-columns:repeat(7,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>读书会11 · 第3周 覆盖矩阵终检看板 <span class="badge b-ok" style="vertical-align:middle">v2 · 正确判定域</span></h1>
+  <p class="sub">第3周《爱 · 取 · 有与生老死 · 缘起闭环》 ｜ 第五轮精简版 · 第5版精修 ｜ 2026-10-13 ｜ 地图版本：释义版 v2</p>
+
+  <div class="card">
+    <h2><span class="n">1</span>总览</h2>
+    <div class="grid4">
+      <div class="metric"><div class="lbl">覆盖真值</div><div class="num" style="color:var(--ok)">26<small> / 26</small></div></div>
+      <div class="metric"><div class="lbl">真缺口补写</div><div class="num" style="color:var(--amber)">6<small> 条</small></div></div>
+      <div class="metric"><div class="lbl">异写核对</div><div class="num" style="color:var(--blue)">2<small> 处</small></div></div>
+      <div class="metric"><div class="lbl">字数验收</div><div class="num" style="color:var(--ok)">0<small> 违规</small></div></div>
+    </div>
+    <div class="note">判定域＝讲解本体（共读原文1 → 第一轮分享；共读原文2 → 第二轮分享）。知识地图节 / 信息卡 / 延伸阅读一律不计入；已逐行剔除 <code>&gt;</code> 主持人操作行。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span>26 知识点覆盖热力</h2>
+    <div class="k26">
+      <div class="cell">K01</div><div class="cell">K02</div><div class="cell">K03</div><div class="cell">K04</div><div class="cell">K05</div><div class="cell">K06</div><div class="cell">K07</div><div class="cell">K08</div><div class="cell">K09</div><div class="cell">K10</div><div class="cell">K11</div><div class="cell">K12</div><div class="cell">K13</div>
+      <div class="cell">K14</div><div class="cell">K15</div><div class="cell">K16</div><div class="cell">K17</div><div class="cell">K18</div><div class="cell">K19</div><div class="cell">K20</div><div class="cell">K21</div><div class="cell">K22</div><div class="cell">K23</div><div class="cell">K24</div><div class="cell">K25</div><div class="cell">K26</div>
+    </div>
+    <div class="note">全部 26 点在正确判定域下命中。K06 / K07 为异写命中（见第 5 区块）。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span>字数验收</h2>
+    <div class="rowbar"><span class="t">共读原文1 · 全段</span><span class="bar"><i style="width:99.1%"></i></span><span class="v">3568 / 3600</span></div>
+    <div class="rowbar"><span class="t">共读原文1 · 扩展</span><span class="bar"><i style="width:0%"></i></span><span class="v">0 / 900</span></div>
+    <div class="rowbar"><span class="t">共读原文2 · 全段</span><span class="bar"><i style="width:91.9%"></i></span><span class="v">3308 / 3600</span></div>
+    <div class="rowbar"><span class="t">共读原文2 · 扩展</span><span class="bar"><i style="width:76.1%"></i></span><span class="v">685 / 900</span></div>
+    <div class="note">官方脚本 <code>count_spoken.py</code>：合规 0 违规。结构自检（知识地图节 / <code>&lt;/div&gt;</code> 配对 / 标准回向四句 / 收尾未拆分）全部通过。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">4</span>本轮腾字数（转写冗余校订 · 减 336 字）</h2>
+    <table>
+      <colgroup><col style="width:120px"><col style="width:80px"><col style="width:80px"><col></colgroup>
+      <thead><tr><th>时间戳</th><th class="c">前</th><th class="c">后</th><th>主要修正（术语·数字·引文一字未动）</th></tr></thead>
+      <tbody>
+        <tr><td>00:01:17.300</td><td class="c">179</td><td class="c">167</td><td>心性道论→清净道论；口感→苦；有伦→有轮；丑→愁；十二空→十二支</td></tr>
+        <tr><td>00:02:45.790</td><td class="c">189</td><td class="c">132</td><td>春根心→嗔根心；有备→有愁；止于彼等→依彼等</td></tr>
+        <tr><td>00:05:11.180</td><td class="c">149</td><td class="c">105</td><td>亲子源→亲依止缘；筹北口右脑→愁悲苦忧恼；原版→缘法</td></tr>
+        <tr><td>00:06:44.180</td><td class="c">152</td><td class="c">115</td><td>巴格瓦→世尊；漏极起→漏集起；仇等→愁等；不上榜→不必讲</td></tr>
+        <tr><td>00:07:54.160</td><td class="c">229</td><td class="c">142</td><td>物欲→欲爱；欲肉→欲界；直取→执取；好→种</td></tr>
+        <tr><td>00:09:42.680</td><td class="c">188</td><td class="c">132</td><td>曲某运→取某蕴；离运→离蕴；不可逆→变坏</td></tr>
+        <tr><td>00:10:28.620</td><td class="c">96</td><td class="c">53</td><td>色身香味触→色声香味触；色受想情识→色受想行识</td></tr>
+      </tbody>
+    </table>
+    <div class="note">合计 1182 → 846，净减 336 字。压缩序：①转写重复段 ②原译 ③核心句内压缩。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">5</span>留痕：真缺口 / 异写 / 结构修正</h2>
+    <div class="grid2">
+      <div>
+        <p style="margin:0 0 8px"><span class="badge b-amber">真缺口 · 已补写 6 条</span></p>
+        <ul class="tight">
+          <li><b>K12 四取</b> — 共读原文本体无（旧命中全来自地图节）→ 补扩展段「四种取 · 取的特相 · 舍断次序」</li>
+          <li><b>K14</b> 取是爱数数重复·越想越美而硬化 → 正文段「四」</li>
+          <li><b>K15/K16</b> 业有＝福非福不动行／生有＝欲有色有无色有 → 正文段「五、取缘有」</li>
+          <li><b>K17</b> 生＝结生心（过去五因）→ 正文段「七」</li>
+          <li><b>K22</b> 无明是首要·不是第一因 → 正文段「八」</li>
+          <li><b>K24</b> 环出口：无明无余离灭行则灭 → 正文段「九」</li>
+        </ul>
+      </div>
+      <div>
+        <p style="margin:0 0 8px"><span class="badge b-blue">异写核对 · 判为已覆盖 2 处</span></p>
+        <ul class="tight">
+          <li><b>K06「果报如此」</b> — 原文作「爱是发生在速行里面的」「受要对爱有支助作用，就只有在前面的果报心」「速行里面的受跟速行里面的爱是俱生缘」→ 义理落地，仅无该口诀</li>
+          <li><b>K07「六爱身」</b> — 原文作「六爱」「六种爱」「色爱…法爱」→ 异写</li>
+        </ul>
+        <p style="margin:12px 0 8px"><span class="badge b-purple">结构修正 3 处</span></p>
+        <ul class="tight">
+          <li>共读2 段标题序号倒置（「五」在「四」前，且为空壳标题）→ 重排 四→九</li>
+          <li>知识地图「主持人用法」与实际分段不符 → 改为「共读1 走一～三；共读2 走四～六」</li>
+          <li>地图节尾部重复 <code>---</code> → 删去多余一条</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">6</span>判定方法（四条纪律）</h2>
+    <dl class="kv">
+      <dt>① 拆到原子级</dt><dd>一条要点含 4–8 个原子点，命中任一不得整条判完整（防系统性高估）</dd>
+      <dt>② 判定域＝本体</dt><dd>只取共读原文1／2，分享 · 讨论 · 收尾 · 地图节一律不计入</dd>
+      <dt>③ 0 命中 ≠ 缺失</dt><dd>必须回原文核对异写（全角引号、多「而」字、转写同音字）</dd>
+      <dt>④ 「○」判据</dt><dd>判断句 / 总括句未落地，最易漏判成 ●</dd>
+    </dl>
+    <div class="note">两条铁律：<b>合规 ≠ 合格</b>；<b>覆盖率必须报真值</b>——报高估的 100% 会让缺口被永远漏掉，比缺漏更危险。</div>
+  </div>
+
+  <p class="foot">读书会11 · 第3周 · 覆盖矩阵终检看板 v2 ｜ 真值 26/26 ｜ 字数合规 ｜ 第3周交付合格</p>
+
+</div>
+</body>
+</html>

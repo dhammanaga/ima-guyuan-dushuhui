@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """第5版主持人版「朗读字数」核验工具
 
-口径依据（2026-10-12 尊者裁定）：
+口径依据（2026-10-13 尊者裁定，取代 2026-10-12 旧口径）：
   只计算「要念出来」的量，按中等偏慢语速 180 字/分钟 换算：
     · 4 周版：共读原文1 = 20 分钟 → ≤3600 字；共读原文2 = 20 分钟 → ≤3600 字
               （两段各自独立判定，不是相加再比）
     · 8 周版：共读       = 25 分钟 → ≤4500 字
-    · ◈ 扩展段＝时间富余才加读，**整节 ◈ 扩展合计 ≤ 5 分钟 × 180 = 900 字**
+    · ◈ 扩展段＝时间富余才加读，**字数不受限制**（2026-10-13 尊者令：放宽字数限制，
+      拓展内容字数不受限制）。脚本不再对扩展段单独判超，仅统计并显示其字数。
 
 「朗读正文」范围 = 仅 `## 📖 共读原文N` 整节内的可朗读文字；
 不含材料标题行、`- **文件**：`、`> ⚠️ 主持人操作：`、`> 主持人：`、
@@ -33,8 +34,9 @@ MIN2LIM = {
     "共读": 25 * CPS,        # 4500（8 周版单段）
 }
 
-# ◈ 扩展段整节合计上限：5 分钟
-EXT_LIM = 5 * CPS           # 900
+# ◈ 扩展段：2026-10-13 尊者令「放宽字数限制，拓展内容字数不受限制」
+# 置为 None 表示不设上限；脚本仅统计显示，不判超。
+EXT_LIM = None
 
 SKIP_PREFIX = (
     "### 原文材料", "- **文件**", "> ⚠️", "> 主持人", "## ",
@@ -148,17 +150,16 @@ def check(path, verbose=False):
     for name, body in secs:
         n, detail, extn = spoken(body)
         lim = limit_of(name)
-        ok = n <= lim and extn <= EXT_LIM
+        # 2026-10-13：扩展段字数不受限制，只判全段
+        ok = n <= lim
         bad = bad or not ok
         flags = ""
         if n > lim:
             flags += " 全段超%d" % (n - lim)
-        if extn > EXT_LIM:
-            flags += " 扩展超%d" % (extn - EXT_LIM)
         rows.append((name, n, lim, extn, ok))
         if verbose:
-            print("  %-11s 全段 %5d/%d  扩展 %4d/%d  %s"
-                  % (name, n, lim, extn, EXT_LIM, "OK" if ok else ("超" + flags)))
+            print("  %-11s 全段 %5d/%d  扩展 %4d(不限)  %s"
+                  % (name, n, lim, extn, "OK" if ok else ("超" + flags)))
             for dname, c, is_ext in detail:
                 print("        %5d  %s%s" % (c, "[扩展] " if is_ext else "", dname))
 
@@ -201,11 +202,11 @@ if __name__ == "__main__":
         rows, bad, has_map = check(f, verbose)
         for name, n, lim, extn, ok in rows:
             if not ok:
-                over.append((max(n - lim, extn - EXT_LIM), n, lim, extn, name, f))
+                over.append((n - lim, n, lim, extn, name, f))
     if not files:
         print("未找到 .md 文件")
     print()
     print("共 %d 个文件，字数不合规 %d 段" % (len(files), len(over)))
     for d, n, lim, extn, name, f in sorted(over, reverse=True):
-        print("  %-11s 全段%6d/%d 扩展%5d/%d  %s"
-              % (name, n, lim, extn, EXT_LIM, os.path.basename(f)[:40]))
+        print("  %-11s 全段%6d/%d 扩展%5d(不限)  %s"
+              % (name, n, lim, extn, os.path.basename(f)[:40]))
