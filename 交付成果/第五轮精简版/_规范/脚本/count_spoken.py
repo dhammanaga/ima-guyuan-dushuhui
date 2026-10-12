@@ -102,6 +102,17 @@ def spoken(text):
     return len("".join(keep)), detail, len("".join(ext))
 
 
+def check_html(text):
+    """HTML 标签配对自检——第1行 </div> 缺失会让 GitHub 整篇右对齐（2026-10-12 踩坑）。"""
+    o = text.count('<div align="right">')
+    c = text.count("</div>")
+    if o == c:
+        return True, ""
+    if o > c:
+        return False, "\u2717 </div> 缺失 %d 个 → GitHub 会整篇右对齐" % (o - c)
+    return False, "\u2717 <div align=\"right\"> 多 %d 个（无害，但建议清理）" % (c - o)
+
+
 def check(path, verbose=False):
     t = open(path, encoding="utf-8").read()
     secs = sections(t)
@@ -134,11 +145,16 @@ def check(path, verbose=False):
         bool(re.search(r"(?m)^##\s*[^\n]*本周知识地图", t))
     if not has_map:
         bad = True
-    print("%s  %s%s" % (
+    # 自检：HTML 标签配对（缺 </div> → GitHub 整篇右对齐）
+    html_ok, html_msg = check_html(t)
+    if not html_ok:
+        bad = True
+    print("%s  %s%s%s" % (
         "   ".join("%s=%d/%d(扩%d)%s" % (r[0], r[1], r[2], r[3], "" if r[4] else " X")
                    for r in rows),
         "合规" if not bad else "有段超标",
-        "" if has_map else "  ✗缺「本周知识地图」节"))
+        "" if has_map else "  \u2717缺「本周知识地图」节",
+        "" if html_ok else "  " + html_msg))
     print("      %s" % path)
     return rows, bad, has_map
 
