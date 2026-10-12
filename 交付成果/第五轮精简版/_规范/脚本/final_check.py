@@ -47,6 +47,23 @@ def check(path):
     if n_ff:
         problems.append('④ U+FFFD 编码损坏 %d 处 → 需还原为正确汉字' % n_ff)
 
+    # 附：节内混用 ## 会让 count_spoken 字数静默归零（skill §15.7）
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        'cs', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'count_spoken.py'))
+    try:
+        cs = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cs)
+        for sec, body in cs.sections(s):
+            n, _, _ = cs.spoken(body)
+            if n < 500:
+                h2 = re.findall(r'(?m)^## (?!📖).*', body)
+                problems.append('附·%s 字数仅 %d（<500）——疑似节内混用 ## 导致统计失效；'
+                                '节内段标题须用 **【…】**，见 skill §15.7%s'
+                                % (sec, n, ('；节内 ## 行：' + ' / '.join(x[:24] for x in h2[:3])) if h2 else ''))
+    except Exception as e:
+        problems.append('附·字数交叉校验未执行（%s）' % type(e).__name__)
+
     # 附：RULES5 三·七 回向词与收尾（脚本已查，但一并复核）
     n_xf = sum(s.count(x) for x in XF)
     if n_xf != 4:
