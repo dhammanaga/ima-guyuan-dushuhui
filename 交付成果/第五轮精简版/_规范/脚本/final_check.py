@@ -73,11 +73,20 @@ def check(path):
 if __name__ == '__main__':
     args = sys.argv[1:]
     if not args:
-        print('用法：python final_check.py <文件.md> …')
+        print('用法：python final_check.py <文件.md> [<文件.md> …]')
+        print('      也接受目录参数（自动扫描该目录下所有 *.md）')
         sys.exit(2)
+    # 目录参数 → 展开为该目录下的 *.md
+    files = []
+    for a in args:
+        if os.path.isdir(a):
+            files.extend(sorted(
+                os.path.join(a, f) for f in os.listdir(a) if f.endswith('.md')))
+        else:
+            files.append(a)
     total = 0
-    for f in args:
+    for f in files:
         total += check(f)
     print()
-    print('共 %d 个文件，待修 %d 项' % (len(args), total))
+    print('共 %d 个文件，待修 %d 项' % (len(files), total))
     sys.exit(1 if total else 0)
