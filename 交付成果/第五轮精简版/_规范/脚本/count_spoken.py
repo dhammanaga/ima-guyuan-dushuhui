@@ -113,6 +113,28 @@ def check_html(text):
     return False, "\u2717 <div align=\"right\"> 多 %d 个（无害，但建议清理）" % (c - o)
 
 
+XIFANG = ["愿我此功德，导向诸漏尽！",
+          "愿我此功德，为证涅槃缘！",
+          "我此功德分，回向诸有情！",
+          "愿彼等一切，同得功德分！"]
+XIFANG_CUSTOM = "愿以此共修|愿此善缘成熟|愿正见灯灯相续"
+
+
+def check_xifang(text):
+    """回向词与收尾自检（2026-10-12 尊者令：回向词绝对不可改，收尾只设一个）。"""
+    msgs = []
+    n = sum(text.count(x) for x in XIFANG)
+    if n == 0 and "回向" in text:
+        msgs.append("✗ 无标准回向词四句")
+    elif n > 4:
+        msgs.append("✗ 回向词出现%d 次（应全篇仅 4 句）" % n)
+    if re.search(XIFANG_CUSTOM, text):
+        msgs.append("✗ 含自造回向文，须换回标准四句")
+    if re.search(r"(?m)^### 收尾(?:一|二)?", text):
+        msgs.append("✗ 收尾被拆成「收尾一/二」，应合并为单一环节")
+    return (len(msgs) == 0), " ".join(msgs)
+
+
 def check(path, verbose=False):
     t = open(path, encoding="utf-8").read()
     secs = sections(t)
@@ -149,12 +171,17 @@ def check(path, verbose=False):
     html_ok, html_msg = check_html(t)
     if not html_ok:
         bad = True
-    print("%s  %s%s%s" % (
+    # 自检：回向词与收尾结构（尊者令：回向词绝对不可改，收尾只设一个）
+    xf_ok, xf_msg = check_xifang(t)
+    if not xf_ok:
+        bad = True
+    print("%s  %s%s%s%s" % (
         "   ".join("%s=%d/%d(扩%d)%s" % (r[0], r[1], r[2], r[3], "" if r[4] else " X")
                    for r in rows),
         "合规" if not bad else "有段超标",
         "" if has_map else "  \u2717缺「本周知识地图」节",
-        "" if html_ok else "  " + html_msg))
+        "" if html_ok else "  " + html_msg,
+        "" if xf_ok else "  " + xf_msg))
     print("      %s" % path)
     return rows, bad, has_map
 
