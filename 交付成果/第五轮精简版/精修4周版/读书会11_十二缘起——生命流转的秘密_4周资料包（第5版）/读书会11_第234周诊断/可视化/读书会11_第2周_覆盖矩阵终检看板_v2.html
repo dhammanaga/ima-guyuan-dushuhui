@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>读书会11 第2周 · 覆盖矩阵终检看板 v2（释义版）</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1c2024; --ink2:#4a5259; --ink3:#7b858e;
+    --line:#e3e7ec; --line2:#eef1f5;
+    --ok:#0f7b4f; --okbg:#e8f6ef;
+    --new:#b26a00; --newbg:#fff5e2;
+    --warn:#b02a37; --warnbg:#fdecee;
+    --blue:#1f5fa8; --bluebg:#eaf2fc;
+    --purple:#6b3fa0; --purplebg:#f3ecfc;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:34px 22px 70px;}
+  header{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px;}
+  h1{font-size:24px;margin:0 0 8px;letter-spacing:.3px;}
+  .sub{color:var(--ink3);font-size:13.5px;}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;margin-right:6px;}
+  .b-blue{background:var(--bluebg);color:var(--blue);}
+  .b-purple{background:var(--purplebg);color:var(--purple);}
+  .b-ok{background:var(--okbg);color:var(--ok);}
+
+  h2{font-size:17px;margin:34px 0 14px;padding-left:11px;border-left:4px solid var(--ink);letter-spacing:.2px;}
+  h3{font-size:14.5px;margin:22px 0 10px;color:var(--ink2);}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow);}
+  .grid{display:grid;gap:14px;}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:860px){.g4,.g3,.g2{grid-template-columns:1fr 1fr;}}
+  @media(max-width:560px){.g4,.g3,.g2{grid-template-columns:1fr;}}
+
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);}
+  .stat .k{font-size:12px;color:var(--ink3);letter-spacing:.4px;}
+  .stat .v{font-size:27px;font-weight:700;margin:5px 0 2px;font-variant-numeric:tabular-nums;}
+  .stat .d{font-size:12px;color:var(--ink3);}
+  .v-ok{color:var(--ok);} .v-warn{color:var(--warn);} .v-new{color:var(--new);} .v-blue{color:var(--blue);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line2);vertical-align:top;}
+  th{background:#fafbfc;color:var(--ink2);font-weight:600;font-size:12.5px;letter-spacing:.3px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  td.c,th.c{text-align:center;white-space:nowrap;}
+  .tag{display:inline-block;min-width:22px;padding:1px 7px;border-radius:6px;font-size:12px;font-weight:700;text-align:center;}
+  .t-ok{background:var(--okbg);color:var(--ok);}
+  .t-new{background:var(--newbg);color:var(--new);}
+  .t-warn{background:var(--warnbg);color:var(--warn);}
+  .t-mut{background:#eef1f5;color:var(--ink3);}
+
+  .flow{display:flex;align-items:stretch;gap:0;margin:6px 0 4px;flex-wrap:wrap;}
+  .step{flex:1 1 200px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative;box-shadow:var(--shadow);}
+  .step + .step{margin-left:26px;}
+  .step + .step::before{content:"→";position:absolute;left:-21px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:17px;}
+  @media(max-width:860px){.step+.step{margin-left:0;margin-top:12px;}.step+.step::before{content:"↓";left:50%;top:-16px;transform:translateX(-50%);}}
+  .step .t{font-size:12px;color:var(--ink3);letter-spacing:.4px;margin-bottom:5px;}
+  .step .m{font-size:15px;font-weight:700;}
+  .step .x{font-size:12.5px;color:var(--ink2);margin-top:5px;}
+
+  .bar{height:9px;border-radius:999px;background:#eceff3;overflow:hidden;margin-top:7px;}
+  .bar>i{display:block;height:100%;border-radius:999px;}
+  .i-ok{background:linear-gradient(90deg,#12a065,#0f7b4f);}
+  .i-new{background:linear-gradient(90deg,#e0932a,#b26a00);}
+  .i-blue{background:linear-gradient(90deg,#3b82d6,#1f5fa8);}
+
+  ul.tight{margin:8px 0 0;padding-left:20px;}
+  ul.tight li{margin:5px 0;font-size:13.5px;color:var(--ink2);}
+  code{background:#f2f4f7;padding:1px 5px;border-radius:4px;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .note{border-left:3px solid var(--blue);background:var(--bluebg);padding:12px 15px;border-radius:0 8px 8px 0;font-size:13.5px;color:#1c3d63;margin-top:14px;}
+  .danger{border-left:3px solid var(--warn);background:var(--warnbg);padding:12px 15px;border-radius:0 8px 8px 0;font-size:13.5px;color:#7a1c25;margin-top:14px;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:10px;}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>读书会11《十二缘起》第2周 · 覆盖矩阵终检看板 <span class="badge b-purple">v2 · 释义版</span></h1>
+  <div class="sub">
+    被测：<code>第2周_行·识·名色与六入·触·受_内容待重新修订_主持人版.md</code>　｜　
+    基准：<code>_w2_知识地图_v2.md</code>（逐点带释义）<br>
+    判定域：共读原文1 + 共读原文2 的<strong>讲解本体</strong>（主持人操作行全部剔除）　｜　判定日期：2026-10-13
+  </div>
+</header>
+
+<!-- ============ 区块1：结论总览 ============ -->
+<h2>一、结论总览</h2>
+<div class="grid g4">
+  <div class="stat">
+    <div class="k">覆盖率（真值）</div>
+    <div class="v v-ok">26 / 26</div>
+    <div class="d">100%　逐条回原文核对</div>
+    <div class="bar"><i class="i-ok" style="width:100%"></i></div>
+  </div>
+  <div class="stat">
+    <div class="k">本轮真补写</div>
+    <div class="v v-new">2 处</div>
+    <div class="d">K01 思心所 · K24 六触生六受</div>
+    <div class="bar"><i class="i-new" style="width:100%"></i></div>
+  </div>
+  <div class="stat">
+    <div class="k">异写误判（已排除）</div>
+    <div class="v v-blue">3 处</div>
+    <div class="d">K01 · K08 · K12</div>
+    <div class="bar"><i class="i-blue" style="width:100%"></i></div>
+  </div>
+  <div class="stat">
+    <div class="k">字数合规</div>
+    <div class="v v-ok">0 违规</div>
+    <div class="d">共读2 扩展 900/900 卡线</div>
+    <div class="bar"><i class="i-ok" style="width:100%"></i></div>
+  </div>
+</div>
+
+<div class="danger">
+  <strong>⚠ 旧版 18/18 是虚报。</strong>
+  旧版《原子级18知识点_终检》用「六入」「舍」「六门」「五种路径」等<strong>过短／跨概念</strong>关键词判定，
+  把 4 个真缺口误判为已覆盖；且把<strong>主持人操作行</strong>算进判定域。真实覆盖率仅 <strong>13/18</strong>。
+</div>
+
+<!-- ============ 区块2：根因与修法 ============ -->
+<h2>二、根因与修法：地图从「名字级」升为「释义级」</h2>
+<div class="flow">
+  <div class="step">
+    <div class="t">旧地图（名字级）</div>
+    <div class="m">「六入＝六扇门」</div>
+    <div class="x">只能查「这个词出现过没有」——查不出「这件事讲清了没有」</div>
+  </div>
+  <div class="step">
+    <div class="t">新地图（释义级）</div>
+    <div class="m">「六入＝六扇门。<em>门只是让境界进来的通道，门本身没有『谁在看、谁在听』</em>」</div>
+    <div class="x">基准自带释义 → 原文必须符合释义内容，缺则判缺口</div>
+  </div>
+  <div class="step">
+    <div class="t">判定方法</div>
+    <div class="m">关键词取自释义 · 2–3 长短语联判</div>
+    <div class="x">必须全部命中才算 ●；0 命中先回原文核对异写</div>
+  </div>
+</div>
+
+<div class="grid g2" style="margin-top:16px">
+  <div class="card">
+    <h3 style="margin-top:0">旧版两处系统性错误</h3>
+    <ul class="tight">
+      <li><strong>关键词过短／跨概念</strong><br>
+        「六入」命中的是「识、名色、六入、触、受为果报轮转」这类<strong>列举性提及</strong>；<br>
+        「舍」命中的是「舍俱领受心」；<br>
+        「六门」命中的是「六门心路」泛指；<br>
+        「五种路径」只出现在<strong>主持人操作元数据行</strong>里。</li>
+      <li><strong>判定域污染</strong><br>把「主持人操作」「讨论追问路径」的表述算作正文。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">本版四条判定纪律</h3>
+    <ul class="tight">
+      <li><strong>判定域</strong>＝仅共读原文1／2 讲解本体，逐行剔除 <code>&gt;</code> 开头操作行（剔除约 1,911 字）。</li>
+      <li><strong>关键词</strong>取自地图释义，每条 2–3 个长短语（≥6 字）<strong>全部命中</strong>才判 ●。</li>
+      <li><strong>0 命中 ≠ 缺失</strong>：先回原文核对异写（引号／「而」字等）。</li>
+      <li><strong>覆盖率报真值</strong>：不以关键词命中代替上下文核对。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 区块3：26 点矩阵 ============ -->
+<h2>三、原子级 26 点覆盖矩阵（共读原文1 · 行识名色）</h2>
+<table>
+  <thead>
+    <tr><th class="c">编号</th><th>原子知识点（含地图释义要点）</th><th class="c">判定</th><th>回原文核对依据</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="c">K01</td><td>行＝<strong>造作</strong>；思心所驱使身语意造业；留下「业的力量」</td><td class="c"><span class="tag t-new">●新补</span></td><td>「行，有三种」段＋本轮补写「「行」不是「行动」，而是「造作」——是<strong>思心所</strong>驱使身、语、意去造业」；「（造作‘行’之后，会留下业的力量）」</td></tr>
+    <tr><td class="c">K02</td><td>行分三种：福行／非福行／不动行</td><td class="c"><span class="tag t-ok">●</span></td><td>(1)「福行」(2)「非福行」(3)「不动行」</td></tr>
+    <tr><td class="c">K03</td><td>共 29 种思 ＝ 29 种业行</td><td class="c"><span class="tag t-ok">●</span></td><td>「这三种行共有二十九种思（亦称为29种业行）」</td></tr>
+    <tr><td class="c">K04</td><td>福行 13 思 ＝ 8 欲界善思 ＋ 5 色界善思</td><td class="c"><span class="tag t-ok">●</span></td><td>「八种欲界善思」「五种色界善思」</td></tr>
+    <tr><td class="c">K05</td><td>非福行 12 种不善思</td><td class="c"><span class="tag t-ok">●</span></td><td>「十二种不善思」</td></tr>
+    <tr><td class="c">K06</td><td>不动行 4 种无色界善思</td><td class="c"><span class="tag t-ok">●</span></td><td>「四种无色界善思」</td></tr>
+    <tr><td class="c">K07</td><td>以「业」释行、以「果报／业报」释识</td><td class="c"><span class="tag t-ok">●</span></td><td>「以“业”解释“行”」「以“果报、业报”解释“识”」</td></tr>
+    <tr><td class="c">K08</td><td>三论点证「无业则无果报」</td><td class="c"><span class="tag t-ok">●</span></td><td>论点1／2／3 三答齐全（「若无累积的业」为异写）</td></tr>
+    <tr><td class="c">K09</td><td>识＝<strong>果报识</strong>；32 种世间果报识</td><td class="c"><span class="tag t-ok">●</span></td><td>「特指果报识」「三十二种世间（有漏）果报识」</td></tr>
+    <tr><td class="c">K10</td><td>32 构成：双五识＋意识22（2领受＋3推度＋8有因欲界＋5色界＋4无色界）</td><td class="c"><span class="tag t-ok">●</span></td><td>「双五识」「意识有二十二种」「八种有因欲界果报心，五种色界果报心…四种无色界果报心」</td></tr>
+    <tr><td class="c">K11</td><td>出世间心不计入轮回论</td><td class="c"><span class="tag t-ok">●</span></td><td>「出世间心不属于轮回论，所以不包括在内」</td></tr>
+    <tr><td class="c">K12</td><td>行缘识＝业→果的因果连接</td><td class="c"><span class="tag t-ok">●</span></td><td>「如何得知“识”是以行为缘而生起的？」（「而」字异写）</td></tr>
+    <tr><td class="c">K13</td><td>名色＝身心（名＝受想行识等非色法；色＝四大种与所造色）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段①「名，是受、想、行、识四种非色法；色，是四大种与所造色…就是「身心」」</td></tr>
+  </tbody>
+</table>
+
+<h3>共读原文1 扩展段① + 共读原文2（名色 · 六入 · 触 · 受）</h3>
+<table>
+  <thead>
+    <tr><th class="c">编号</th><th>原子知识点（含地图释义要点）</th><th class="c">判定</th><th>回原文核对依据</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="c">K14</td><td>「相续连结故，不一亦不异」；同一生命相续流</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段①「相续连结故，不一亦不异」「不是同一个生命」「同一个生命相续流里」</td></tr>
+    <tr><td class="c">K15</td><td>六入＝<strong>六扇门</strong>（不是「我」）</td><td class="c"><span class="tag t-new">●新补</span></td><td>旧版仅列举性提及；本轮补写「门只是让境界进来的通道，<strong>本身没有「谁在看、谁在听」</strong>——六入不是「我」」</td></tr>
+    <tr><td class="c">K16</td><td>四喻：回声／灯明／印章／镜像</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段①四喻名称齐全＋「并未去到别处」</td></tr>
+    <tr><td class="c">K17</td><td>十福业事（布施…正见 十项）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段①十项逐一列举齐全</td></tr>
+    <tr><td class="c">K18</td><td>内功德／外功德</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段①「外功德利益他人，内功德是内心获得的丰盈与力量」</td></tr>
+    <tr><td class="c">K19</td><td>触＝根·境·识<strong>三者和合</strong>（非「我」在触）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段②「根、境、识三者相遇，而非「我」在触」</td></tr>
+    <tr><td class="c">K20</td><td>五门心路：五门转向·眼识·领受·推度·确定·速行7·彼所缘2</td><td class="c"><span class="tag t-ok">●</span></td><td>原文2 逐项列出七个路心与数量</td></tr>
+    <tr><td class="c">K21</td><td>无明从六门进来（那一念<strong>不如理作意</strong>）</td><td class="c"><span class="tag t-new">●新补</span></td><td>扩展段②「而无明，往往就在那一念「不如理作意」里进来」</td></tr>
+    <tr><td class="c">K22</td><td>无明引发不善行的<strong>五种路径</strong></td><td class="c"><span class="tag t-new">●新补</span></td><td>扩展段②①②③④⑤ 五条齐全（旧版「五种路径」仅在主持人操作行）</td></tr>
+    <tr><td class="c">K23</td><td>受＝<strong>三受</strong>（苦受·乐受·不苦不乐舍受）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段②「苦受、乐受、不苦不乐（舍）受」</td></tr>
+    <tr><td class="c">K24</td><td><strong>缘于六触生六种受</strong></td><td class="c"><span class="tag t-new">●新补</span></td><td>旧版 0 命中；本轮补写「因为<strong>缘于六触</strong>（眼触…意触），所以生起<strong>六种受</strong>」</td></tr>
+    <tr><td class="c">K25</td><td>触受非善恶，善恶在作意（受是果，作意是因）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段②「是果报、属无记法…<strong>受是果，作意是因</strong>」</td></tr>
+    <tr><td class="c">K26</td><td>受不是终点——<strong>缘受而有爱</strong>（自然亲依止缘）</td><td class="c"><span class="tag t-ok">●</span></td><td>扩展段②「缘受而有爱」＋「以<strong>自然亲依止缘</strong>为缘」＋「爱屋及乌」</td></tr>
+  </tbody>
+</table>
+
+<div class="legend">
+  <span><i class="dot" style="background:#0f7b4f"></i>● 完整清晰</span>
+  <span><i class="dot" style="background:#b26a00"></i>●新补 本轮真补写后达标</span>
+  <span><i class="dot" style="background:#b02a37"></i>✗ 未覆盖</span>
+  <span><i class="dot" style="background:#7b858e"></i>◐ 完整但晦涩</span>
+</div>
+
+<!-- ============ 区块4：真缺口与补写留痕 ============ -->
+<h2>四、新增缺口与补写留痕（原地图 → 新地图 → 补写）</h2>
+<table>
+  <thead>
+    <tr><th class="c">编号</th><th>原地图（名字级）</th><th>新地图（释义级）要求</th><th>原文状况</th><th class="c">处理</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="c">K01</td>
+      <td>行＝造作</td>
+      <td>行不是「行动」，是<strong>思心所</strong>驱使身语意造业；造作留下「业的力量」</td>
+      <td>原文有「造作之后留下业的力量」，但<strong>未点出「思心所」</strong>这一层</td>
+      <td class="c"><span class="tag t-new">已补写</span></td>
+    </tr>
+    <tr>
+      <td class="c">K15</td>
+      <td>六入＝六扇门</td>
+      <td>门只是通道，<strong>门本身没有「谁在看、谁在听」</strong>——六入不是「我」</td>
+      <td>原文只有「识、名色、六入、触、受为果报轮转」这类<strong>列举性提及</strong></td>
+      <td class="c"><span class="tag t-new">已补写</span></td>
+    </tr>
+    <tr>
+      <td class="c">K21</td>
+      <td>无明从六门进来</td>
+      <td>无明就在那一念<strong>「不如理作意」</strong>里进来</td>
+      <td>「六门」命中的是「六门心路」泛指，<strong>非本义</strong></td>
+      <td class="c"><span class="tag t-new">已补写</span></td>
+    </tr>
+    <tr>
+      <td class="c">K22</td>
+      <td>无明引发不善行的五种路径</td>
+      <td>① 直接引发／② 本意善所缘却不如理／③ 不善果报引发／④ 善果报引发／⑤ 纯粹不如理</td>
+      <td>「五种路径」<strong>仅出现在主持人操作元数据行</strong>，讲解本体为 0</td>
+      <td class="c"><span class="tag t-new">已补写</span></td>
+    </tr>
+    <tr>
+      <td class="c">K24</td>
+      <td>受＝三受（六触生六受）</td>
+      <td>因<strong>缘于六触</strong>（眼触…意触），故生起<strong>六种受</strong></td>
+      <td>原文只讲「由眼触缘后面的一切受」，<strong>未点出「六触→六受」</strong></td>
+      <td class="c"><span class="tag t-new">已补写</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <strong>异写核对（0 命中 ≠ 缺失，3 处经核对为异写而非缺失）：</strong>
+  <ul class="tight" style="margin-top:6px">
+    <li><strong>K01</strong>「造作'行'之后，会留下业的力量」——原文用<strong>全角单引号</strong> <code>‘ ’</code>（U+2018 / U+2019），非 ASCII 单引号。</li>
+    <li><strong>K08</strong>「若无累积的业」——原文作「<strong>若无</strong>累积的业」（非「若没有」）。</li>
+    <li><strong>K12</strong>「以行为缘而生起」——原文多一个「<strong>而</strong>」字。</li>
+  </ul>
+</div>
+
+<!-- ============ 区块5：字数合规 ============ -->
+<h2>五、字数合规复核（补写后）</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3 style="margin-top:0">共读原文1</h3>
+    <div style="font-size:20px;font-weight:700">3136 <span style="font-size:13px;color:#7b858e;font-weight:400">/ 3600</span></div>
+    <div class="bar"><i class="i-ok" style="width:87%"></i></div>
+    <div class="d" style="font-size:12.5px;color:#7b858e;margin-top:6px">◈ 扩展 521 / 900　→ 双上限均满足</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">共读原文2</h3>
+    <div style="font-size:20px;font-weight:700">2965 <span style="font-size:13px;color:#7b858e;font-weight:400">/ 3600</span></div>
+    <div class="bar"><i class="i-ok" style="width:82%"></i></div>
+    <div class="d" style="font-size:12.5px;color:#7b858e;margin-top:6px">◈ 扩展 <strong>900 / 900</strong>（卡线）→ 双上限均满足</div>
+  </div>
+</div>
+<div class="note">
+  <strong>压缩纪律：</strong>补写使扩展段由 899 → 938（超 38 字），经三轮压缩（删重复铺垫、压缩括注、缩并定语）压回 900 —— <strong>术语与数字一字未动</strong>（29 种思、32 种果报识、五门转向…彼所缘、六触、三受、自然亲依止缘全部原样保留）。
+</div>
+
+<!-- ============ 区块6：两条铁律 ============ -->
+<h2>六、两条铁律复核</h2>
+<div class="grid g2">
+  <div class="card" style="border-left:4px solid #0f7b4f">
+    <h3 style="margin-top:0">① 合规 ≠ 合格</h3>
+    <div style="font-size:13.5px;color:#4a5259">
+      <code>count_spoken.py</code> 只查<strong>结构与字数</strong>（全段 ≤3600 且 ◈扩展 ≤900）。
+      它给出「✓ 合规 0 违规」<strong>不等于</strong>内容讲清了。
+      覆盖率必须由本表另判 —— 这正是旧版 18/18 虚报的教训。
+    </div>
+  </div>
+  <div class="card" style="border-left:4px solid #b26a00">
+    <h3 style="margin-top:0">② 覆盖率必须报真值</h3>
+    <div style="font-size:13.5px;color:#4a5259">
+      报高估的 100%，会让缺口被<strong>永远漏掉</strong>，比缺漏本身更危险。
+      本版 26/26 系<strong>逐条回原文核对上下文</strong>所得，不以关键词命中代替核对。
+    </div>
+  </div>
+</div>
+
+<footer>
+  读书会11《十二缘起》第2周 · 覆盖矩阵终检看板 v2（释义版）　｜　生成于 2026-10-13　｜　
+  基准：<code>_w2_知识地图_v2.md</code>　｜　机器可读：<code>_w2_cov_v2.json</code>　｜　
+  详细报告：<code>读书会11_第2周_覆盖矩阵_原子级26知识点_终检_v2.md</code>
+</footer>
+
+</div>
+</body>
+</html>

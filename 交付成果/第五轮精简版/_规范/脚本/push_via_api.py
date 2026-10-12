@@ -11,6 +11,7 @@ push_via_api.py —— 坏索引仓库的推送通道（2026-10-12 实战沉淀�
 
 【用法】
 1. 文件清单（一行一个仓库内相对路径）写入 files.txt
+   行首加 `-` 表示**删除远端该路径**（用于重命名场景，例：`-旧路径.md`）
 2. commit message 写入 msg.txt
 3. 运行：python push_via_api.py files.txt msg.txt
 
@@ -33,11 +34,29 @@ REPO = "dhammanaga/ima-guyuan-dushuhui"
 GCM = r"D:\Program Files\WorkBuddy\resources\vendor\PortableGit\mingw64\bin\git-credential-manager.exe"
 PROXY = "http://127.0.0.1:7892"
 API = "https://api.github.com"
+# ⚠️ 载荷文件统一加 _pushapi_ 前缀，避免与手工 curl 查询（如 _ref.json）撞名覆盖
+TMP = "D:/tmp/_pushapi_"
 
 
 def token():
-    out = subprocess.run([GCM, "get"], input="protocol=https\nhost=github.com\n\n",
-                         capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r"""取 token：优先读明文 ~/.git-credentials（快且不会挂），
+    GCM 仅作兜底 —— ⚠️ 2026-10-13 实测 GCM 在后台非交互下会永久挂起
+    （输入 'protocol=https\nhost=github.com\n\n' 时 timeout 124），
+    故绝不可把它当首选通道。"""
+    cred = os.path.join(os.path.expanduser("~"), ".git-credentials")
+    if os.path.exists(cred):
+        import re as _re
+        for ln in open(cred, encoding="utf-8").read().splitlines():
+            m = _re.match(r"https://[^:]+:([^@]+)@github\.com", ln.strip())
+            if m:
+                return m.group(1)
+    # 兜底：GCM（加超时，防止永久挂起）
+    try:
+        out = subprocess.run([GCM, "get"], input="protocol=https\nhost=github.com\n\n",
+                             capture_output=True, text=True, encoding="utf-8",
+                             errors="replace", timeout=20)
+    except subprocess.TimeoutExpired:
+        raise SystemExit("GCM 超时挂起，且 ~/.git-credentials 中无可用 token")
     for ln in out.stdout.splitlines():
         if ln.startswith("password="):
             return ln[9:].strip()
@@ -73,7 +92,9 @@ def git(*a):
 
 def main():
     files = [l.strip() for l in open(sys.argv[1], encoding="utf-8") if l.strip()]
-    print("待推送 %d 个文件\n" % len(files))
+    dels = [f[1:].strip() for f in files if f.startswith("-")]
+    ups = [f for f in files if not f.startswith("-")]
+    print("待推送 %d 个文件（新增/更新 %d，删除 %d）\n" % (len(ups) + len(dels), len(ups), len(dels)))
 
     # 1. 拿远端最新 commit + tree
     branch = curl([f"{API}/repos/{REPO}/git/ref/heads/main"])
@@ -86,7 +107,7 @@ def main():
 
     # 2. 逐文件建 blob
     entries = []
-    for f in files:
+    for f in ups:
         full = os.path.join(r"D:\tmp\repo", f.replace("/", os.sep))
         if not os.path.exists(full):
             print("  ?? 本地不存在，跳过：%s" % os.path.basename(f)); continue
@@ -94,7 +115,7 @@ def main():
         blob_sha = hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
         payload = json.dumps({"content": base64.b64encode(raw).decode(), "encoding": "base64"},
                              ensure_ascii=True)
-        pf = "D:/tmp/_blob.json"
+        pf = TMP + "_blob.json"
         open(pf, "w", encoding="ascii").write(payload)
         res = curl([f"{API}/repos/{REPO}/git/blobs"], data=pf)
         if "sha" not in res:
@@ -104,13 +125,18 @@ def main():
         entries.append({"path": f, "mode": "100644", "type": "blob", "sha": res["sha"]})
         print("  ✓ %-46s %8d字节 %s" % (os.path.basename(f)[:44], len(raw), res["sha"][:8]))
 
-    if not entries:
+    if not entries and not dels:
         print("\n没有可提交的 blob，中止。"); return 1
+
+    # 2.5 删除条目：sha=null 即从 tree 中移除该路径（Git Trees API 官方删除语法）
+    for f in dels:
+        entries.append({"path": f, "mode": "100644", "type": "blob", "sha": None})
+        print("  ✗ 删除远端 %s" % f)
 
     # 3. 建 tree
     payload = json.dumps({"base_tree": base_tree, "tree": entries}, ensure_ascii=True)
-    open("D:/tmp/_tree.json", "w", encoding="ascii").write(payload)
-    tree = curl([f"{API}/repos/{REPO}/git/trees"], data="D:/tmp/_tree.json")
+    open(TMP + "_tree.json", "w", encoding="ascii").write(payload)
+    tree = curl([f"{API}/repos/{REPO}/git/trees"], data=TMP + "_tree.json")
     if "sha" not in tree:
         print("\n!! tree 失败：", str(tree)[:300]); return 1
     print("\n新 tree = %s （改动 %d 项）" % (tree["sha"][:10], len(entries)))
@@ -126,16 +152,16 @@ def main():
         "committer": {"name": "dhammanaga", "email": "dhammanaga@users.noreply.github.com",
                       "date": "2026-10-12T18:10:00+08:00"},
     }, ensure_ascii=True)
-    open("D:/tmp/_commit.json", "w", encoding="ascii").write(payload)
-    commit = curl([f"{API}/repos/{REPO}/git/commits"], data="D:/tmp/_commit.json")
+    open(TMP + "_commit.json", "w", encoding="ascii").write(payload)
+    commit = curl([f"{API}/repos/{REPO}/git/commits"], data=TMP + "_commit.json")
     if "sha" not in commit:
         print("!! commit 失败：", str(commit)[:300]); return 1
     print("新 commit = %s" % commit["sha"][:10])
 
     # 5. 更新 ref
     payload = json.dumps({"sha": commit["sha"], "force": False}, ensure_ascii=True)
-    open("D:/tmp/_ref.json", "w", encoding="ascii").write(payload)
-    ref = curl([f"{API}/repos/{REPO}/git/refs/heads/main"], data="D:/tmp/_ref.json")
+    open(TMP + "_ref.json", "w", encoding="ascii").write(payload)
+    ref = curl([f"{API}/repos/{REPO}/git/refs/heads/main"], data=TMP + "_ref.json")
     if ref.get("object", {}).get("sha", "")[:10] != commit["sha"][:10]:
         print("!! 更新 ref 失败：", str(ref)[:300]); return 1
     print("\n✅ 推送完成 → %s@main = %s" % (REPO, commit["sha"][:10]))
