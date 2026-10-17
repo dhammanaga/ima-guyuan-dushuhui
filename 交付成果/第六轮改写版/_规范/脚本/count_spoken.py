@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """第5版主持人版「朗读字数」核验工具
 
-口径依据（2026-10-13 尊者裁定，取代 2026-10-12 旧口径）：
-  只计算「要念出来」的量，按中等偏慢语速 180 字/分钟 换算：
-    · 4 周版：共读原文1 = 20 分钟 → ≤3600 字；共读原文2 = 20 分钟 → ≤3600 字
-              （两段各自独立判定，不是相加再比）
-    · 8 周版：共读       = 25 分钟 → ≤4500 字
-    · ◈ 扩展段＝时间富余才加读，**字数不受限制**（2026-10-13 尊者令：放宽字数限制，
-      拓展内容字数不受限制）。脚本不再对扩展段单独判超，仅统计并显示其字数。
+口径依据（2026-10-17 尊者令，最新；取代 2026-10-13 的「8周版 ≤4500」）：
+  ★8 周版：每周「原文阅读／共读原文」＝ **3600–5400 纯汉字**（下限 3600／上限 5400，
+     单段判定）；不满 3600 判「偏少」，超 5400 判「超标」。
+  · 4 周版：共读原文1 = 20 分钟 → ≤3600 字；共读原文2 = 20 分钟 → ≤3600 字
+            （两段各自独立判定，不是相加再比）
+  · ◈ 扩展段＝时间富余才加读，**字数不受限制**（2026-10-13 尊者令）。
+  · 字数一律按**纯汉字**计（re.findall(r'[\\u4e00-\\u9fff]')），不含标点／数字／字母，
+    与 RULES5 二·8「唯一裁决口径＝纯汉字」一致。
 
-「朗读正文」范围 = 仅 `## 📖 共读原文N` 整节内的可朗读文字；
+「朗读正文」范围 = 仅 `## 📖 共读原文N`（或 8 周版裸 `## 📖 共读（25 min）`）整节内的可朗读文字；
 不含材料标题行、`- **文件**：`、`> ⚠️ 主持人操作：`、`> 主持人：`、
 `**主持人课前准备**` 及其下编号清单、`---`，也不含速览表/信息卡/讨论题/
 特别提醒/延伸阅读等节外文字。
@@ -27,15 +28,23 @@ import os
 # 中等偏慢朗读速度（字/分钟）
 CPS = 180
 
-# 节名 → 该节朗读分钟数 → 字数上限
-MIN2LIM = {
-    "共读原文1": 20 * CPS,   # 3600（4 周版）
-    "共读原文2": 20 * CPS,   # 3600（4 周版）
-    "共读": 25 * CPS,        # 4500（8 周版单段）
+HZ = re.compile(r"[\u4e00-\u9fff]")
+
+
+def hz(s):
+    """纯汉字数（唯一裁决口径）。"""
+    return len(HZ.findall(s))
+
+
+# 节名 → (下限, 上限)。下限 None 表示只判上限。
+# 8 周版：2026-10-17 尊者令「原文阅读汉字 3600–5400」（原 ≤4500 作废）
+LIM = {
+    "共读原文1": (None, 20 * CPS),      # ≤3600（4 周版第一段）
+    "共读原文2": (None, 20 * CPS),      # ≤3600（4 周版第二段）
+    "共读": (3600, 5400),               # 3600–5400（8 周版单段）
 }
 
 # ◈ 扩展段：2026-10-13 尊者令「放宽字数限制，拓展内容字数不受限制」
-# 置为 None 表示不设上限；脚本仅统计显示，不判超。
 EXT_LIM = None
 
 SKIP_PREFIX = (
@@ -44,9 +53,10 @@ SKIP_PREFIX = (
 
 
 def sections(t):
-    """返回 [(节名, 节正文)]，只取共读原文节。节名如 '共读原文1'。"""
+    """返回 [(节名, 节正文)]，只取共读原文节。
+    兼容 4 周版 `## 📖 共读原文1/2` 与 8 周版 `## 📖 共读（25 min）`。"""
     out = []
-    for m in re.finditer(r"(?m)^## \U0001F4D6 (共读原文\d)", t):
+    for m in re.finditer(r"(?m)^## \U0001F4D6 (共读原文\d|共读)", t):
         st = m.start()
         nx = re.search(r"(?m)^## ", t[st + 5:])
         en = st + 5 + nx.start() if nx else len(t)
@@ -55,19 +65,18 @@ def sections(t):
 
 
 def limit_of(name):
-    """按节名取上限。「共读原文1/2」查 20 分钟档；裸「共读」查 25 分钟档。"""
+    """按节名取 (下限, 上限)。「共读原文1/2」查 20 分钟档；裸「共读」查 8 周版档。"""
     for k in ("共读原文1", "共读原文2"):
         if name.startswith(k):
-            return MIN2LIM[k]
-    return MIN2LIM["共读"]
+            return LIM[k]
+    return LIM["共读"]
 
 
 def spoken(text):
-    """单个共读节的朗读字数 + 逐段明细（段标题行本身不计字数）。
-    返回 (节朗读总数, [(段标题, 字数, 是否◈扩展)], ◈扩展合计字数)"""
+    """单个共读节的纯汉字朗读字数 + 逐段明细（段标题行本身不计字数）。
+    返回 (节朗读纯汉字数, [(段标题, 纯汉字数, 是否◈扩展)], ◈扩展合计纯汉字数)"""
     detail, cur, curname, cur_ext = [], [], "(前言)", False
-    keep = []
-    ext = []
+    keep, ext = [], []
     in_prep = False
     for ln in text.split("\n"):
         x = ln.strip()
@@ -91,7 +100,7 @@ def spoken(text):
             re.match(r"^\*\*[^*]+\*\*（[★◈]", x)
         if m:
             if cur:
-                detail.append((curname, len("".join(cur)), cur_ext))
+                detail.append((curname, hz("".join(cur)), cur_ext))
             cur_ext = ("◈" in x) or ("扩展" in x)
             cur, curname = [], x[:44]
             continue
@@ -100,8 +109,8 @@ def spoken(text):
         if cur_ext:
             ext.append(x)
     if cur:
-        detail.append((curname, len("".join(cur)), cur_ext))
-    return len("".join(keep)), detail, len("".join(ext))
+        detail.append((curname, hz("".join(cur)), cur_ext))
+    return hz("".join(keep)), detail, hz("".join(ext))
 
 
 def check_html(text):
@@ -137,6 +146,19 @@ def check_xifang(text):
     return (len(msgs) == 0), " ".join(msgs)
 
 
+def band_of(lo, hi):
+    return ("≤%d" % hi) if lo is None else ("%d–%d" % (lo, hi))
+
+
+def judge(n, lo, hi):
+    """返回 (是否合规, 备注)。8 周版同时判下限/上限。"""
+    if n > hi:
+        return False, " 超%d" % (n - hi)
+    if lo is not None and n < lo:
+        return False, " 偏少%d" % (lo - n)
+    return True, ""
+
+
 def check(path, verbose=False):
     t = open(path, encoding="utf-8").read()
     secs = sections(t)
@@ -149,17 +171,13 @@ def check(path, verbose=False):
     rows, bad = [], False
     for name, body in secs:
         n, detail, extn = spoken(body)
-        lim = limit_of(name)
-        # 2026-10-13：扩展段字数不受限制，只判全段
-        ok = n <= lim
+        lo, hi = limit_of(name)
+        ok, flag = judge(n, lo, hi)
         bad = bad or not ok
-        flags = ""
-        if n > lim:
-            flags += " 全段超%d" % (n - lim)
-        rows.append((name, n, lim, extn, ok))
+        rows.append((name, n, lo, hi, extn, ok, flag))
         if verbose:
-            print("  %-11s 全段 %5d/%d  扩展 %4d(不限)  %s"
-                  % (name, n, lim, extn, "OK" if ok else ("超" + flags)))
+            print("  %-11s 纯汉字 %5d/%s  扩展 %4d(不限)  %s"
+                  % (name, n, band_of(lo, hi), extn, "OK" if ok else flag.strip()))
             for dname, c, is_ext in detail:
                 print("        %5d  %s%s" % (c, "[扩展] " if is_ext else "", dname))
 
@@ -177,9 +195,10 @@ def check(path, verbose=False):
     if not xf_ok:
         bad = True
     print("%s  %s%s%s%s" % (
-        "   ".join("%s=%d/%d(扩%d)%s" % (r[0], r[1], r[2], r[3], "" if r[4] else " X")
+        "   ".join("%s=%d/%s(扩%d)%s" % (r[0], r[1], band_of(r[2], r[3]), r[4],
+                                         "" if r[5] else " X")
                    for r in rows),
-        "合规" if not bad else "有段超标",
+        "合规" if not bad else "有段不合规",
         "" if has_map else "  \u2717缺「本周知识地图」节",
         "" if html_ok else "  " + html_msg,
         "" if xf_ok else "  " + xf_msg))
@@ -200,13 +219,14 @@ if __name__ == "__main__":
     over = []
     for f in files:
         rows, bad, has_map = check(f, verbose)
-        for name, n, lim, extn, ok in rows:
+        for name, n, lo, hi, extn, ok, flag in rows:
             if not ok:
-                over.append((n - lim, n, lim, extn, name, f))
+                over.append((lo if (lo is not None and n < lo) else hi, n, lo, hi,
+                             extn, name, f, flag))
     if not files:
         print("未找到 .md 文件")
     print()
     print("共 %d 个文件，字数不合规 %d 段" % (len(files), len(over)))
-    for d, n, lim, extn, name, f in sorted(over, reverse=True):
-        print("  %-11s 全段%6d/%d 扩展%5d(不限)  %s"
-              % (name, n, lim, extn, os.path.basename(f)[:40]))
+    for d, n, lo, hi, extn, name, f, flag in sorted(over, reverse=True):
+        print("  %-11s 纯汉字%6d/%s 扩展%5d(不限)%s  %s"
+              % (name, n, band_of(lo, hi), extn, flag, os.path.basename(f)[:40]))
