@@ -106,19 +106,43 @@ def _field(p, code, prefix="", suffix=""):
         _font(p.add_run(suffix), size=9, color=RGBColor(0x80, 0x80, 0x80))
 
 
-def add_runs(p, text, size=10.5, color=None, base_bold=False):
-    '''段内 **加粗** / `代码` 处理，中文宋体＋西文 Times New Roman'''
+PALI_RE = re.compile("[\u0100-\u024F\u1E00-\u1EFF]")
+
+
+def _set_latin(run, latin):
+    """只改拉丁/复杂文种字体，不动 eastAsia（中文照旧）"""
+    rPr = run._element.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = rPr.get_or_add_rFonts()
+    rFonts.set(qn("w:ascii"), latin)
+    rFonts.set(qn("w:hAnsi"), latin)
+    rFonts.set(qn("w:cs"), latin)
+
+
+def add_runs(p, text, size=10.5, color=None, base_bold=False, latin=None, cn=None, en=None):
+    """段内 **加粗** / `代码` 处理；含巴利语变音符号的片段自动改用 Times New Roman，
+    保证 ā ī ū ṅ ñ ṭ ḍ ṇ ḷ ṃ ḥ 等在各类环境下都能正常显示。"""
     text = re.sub(r"`([^`]*)`", r"\1", text)
     text = text.replace("<br>", " ").replace("<br/>", " ")
     for seg in re.split(r"(\*\*.+?\*\*)", text):
         if not seg:
             continue
+        bold = None
         if seg.startswith("**") and seg.endswith("**") and len(seg) > 4:
-            r = p.add_run(seg[2:-2])
-            _font(r, size=size, color=color, bold=True)
-        else:
-            r = p.add_run(seg)
-            _font(r, size=size, color=color, bold=base_bold)
+            seg = seg[2:-2]
+            bold = True
+        for piece in re.split(r"(\S+)", seg):
+            if not piece:
+                continue
+            r = p.add_run(piece)
+            _font(r, cn=(cn or F_BODY_CN), en=(en or F_BODY_EN), size=size, color=color,
+                  bold=(bold if bold else base_bold))
+            if latin:
+                _set_latin(r, latin)
+            if PALI_RE.search(piece):
+                _set_latin(r, F_BODY_EN)
+    return p
 
 
 def _body_fmt(p, before=0, after=5, line=1.4, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
@@ -134,6 +158,15 @@ def _body_fmt(p, before=0, after=5, line=1.4, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
     if right is not None:
         pf.right_indent = Cm(right)
 
+
+
+FONT_ALIAS = {
+    "Courier": "Times New Roman", "Courier New": "Times New Roman",
+    "Symbol": "Times New Roman", "Wingdings": "Times New Roman",
+    "Wingdings 2": "Times New Roman", "Wingdings 3": "Times New Roman",
+    "DengXian": "\u5b8b\u4f53", "\u7b49\u7ebf": "\u5b8b\u4f53", "\u7b49\u7ebf Light": "\u5b8b\u4f53",
+    "Calibri": "Times New Roman", "Cambria": "Times New Roman",
+}
 
 
 def clean_theme(docx_path):
@@ -155,7 +188,17 @@ def clean_theme(docx_path):
             x = re.sub(r'(<a:minorFont>\s*<a:latin typeface="[^"]*"/>\s*)<a:ea typeface="[^"]*"[^>]*/>',
                        r'\1<a:ea typeface="宋体"/>', x)
             x = re.sub(r'<a:font script="[^"]*" typeface="[^"]*"/>', "", x)
+            for bad, good in FONT_ALIAS.items():
+                x = x.replace('typeface="%s"' % bad, 'typeface="%s"' % good)
             data = x.encode("utf-8")
+        elif item.filename.endswith(".xml"):
+            x = data.decode("utf-8", "ignore")
+            orig = x
+            for bad, good in FONT_ALIAS.items():
+                x = re.sub(r'(w:(?:ascii|hAnsi|cs)=")' + re.escape(bad) + r'(")',
+                           r'\g<1>' + good + r'\g<2>', x)
+            if x != orig:
+                data = x.encode("utf-8")
         zout.writestr(item, data)
     zout.close(); zin.close()
     os.replace(tmp, docx_path)
@@ -199,7 +242,7 @@ def convert(md_path, docx_path, header_text, color, color_hex):
         p = doc.add_paragraph()
         if first:
             t = text.replace("（主持人版）", "").replace("（学员版）", "").strip()
-            _font(p.add_run(t), cn=F_HEAD_CN, en=F_HEAD_EN, size=20, color=color, bold=True)
+            add_runs(p, t, size=20, color=color, base_bold=True, cn=F_HEAD_CN, en=F_HEAD_EN)
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             pf = p.paragraph_format
             pf.space_before = Pt(2); pf.space_after = Pt(10); pf.line_spacing = 1.3
@@ -208,7 +251,7 @@ def convert(md_path, docx_path, header_text, color, color_hex):
         size = 16 if lvl == 1 else (13.5 if lvl == 2 else 11.5)
         before = 18 if lvl == 1 else (14 if lvl == 2 else 9)
         after = 6 if lvl == 1 else (4 if lvl == 2 else 2)
-        _font(p.add_run(text), cn=F_HEAD_CN, en=F_HEAD_EN, size=size, color=color, bold=True)
+        add_runs(p, text, size=size, color=color, base_bold=True, cn=F_HEAD_CN, en=F_HEAD_EN)
         pf = p.paragraph_format
         pf.space_before = Pt(before); pf.space_after = Pt(after); pf.line_spacing = 1.25
         pf.keep_with_next = True
@@ -390,16 +433,17 @@ def convert(md_path, docx_path, header_text, color, color_hex):
 
         # 列表
         if re.match(r"^[-*] ", s):
-            p = doc.add_paragraph(style="List Bullet")
-            add_runs(p, s[2:])
+            p = doc.add_paragraph()
+            add_runs(p, "\u2022\u2002" + s[2:])
             _body_fmt(p, before=0, after=3, line=1.4, left=0.95)
             p.paragraph_format.first_line_indent = Cm(-0.45)
             i += 1; seen_content = True; continue
-        if re.match(r"^\d+\. ", s):
-            p = doc.add_paragraph(style="List Number")
-            add_runs(p, re.sub(r"^\d+\.\s*", "", s))
+        mnum = re.match(r"^(\d+)\. (.*)$", s)
+        if mnum:
+            p = doc.add_paragraph()
+            add_runs(p, mnum.group(1) + ".\u2002" + mnum.group(2))
             _body_fmt(p, before=0, after=3, line=1.4, left=0.95)
-            p.paragraph_format.first_line_indent = Cm(-0.45)
+            p.paragraph_format.first_line_indent = Cm(-0.5)
             i += 1; seen_content = True; continue
 
         # 正文
