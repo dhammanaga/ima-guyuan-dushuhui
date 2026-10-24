@@ -408,9 +408,20 @@ def convert(md_path, docx_path, header_text, color, color_hex):
                 if not b or b.startswith("<!--"):
                     continue
                 p = doc.add_paragraph()
-                add_runs(p, b, size=10, color=BODY_GREY)
-                _body_fmt(p, before=0, after=2, line=1.45,
-                          align=WD_ALIGN_PARAGRAPH.JUSTIFY, left=0.45, right=0.25)
+                if re.match(r"^[-*] ", b):                    # 引用块内的无序列表
+                    add_runs(p, "\u2022\u2002" + b[2:], size=10, color=BODY_GREY)
+                    _body_fmt(p, before=0, after=2, line=1.45,
+                              align=WD_ALIGN_PARAGRAPH.JUSTIFY, left=0.95, right=0.25)
+                    p.paragraph_format.first_line_indent = Cm(-0.45)
+                elif re.match(r"^\d+\. ", b):                 # 引用块内的有序列表：保留 md 原编号
+                    add_runs(p, b, size=10, color=BODY_GREY)
+                    _body_fmt(p, before=0, after=2, line=1.45,
+                              align=WD_ALIGN_PARAGRAPH.JUSTIFY, left=0.95, right=0.25)
+                    p.paragraph_format.first_line_indent = Cm(-0.5)
+                else:
+                    add_runs(p, b, size=10, color=BODY_GREY)
+                    _body_fmt(p, before=0, after=2, line=1.45,
+                              align=WD_ALIGN_PARAGRAPH.JUSTIFY, left=0.45, right=0.25)
                 _border(p, "left", color_hex, 30, 8)
                 pPr = p._p.get_or_add_pPr()
                 _shade(pPr, QUOTE_BG)

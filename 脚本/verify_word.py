@@ -60,7 +60,7 @@ def check(path, series="01", weeks=4, edition="第八轮（第8版）"):
         x = p._p.xml
         if f'w:color="{want}"' not in x or 'w:fill="EEF3F9"' not in x:
             bad += 1
-        if not p.paragraph_format.left_indent or round(p.paragraph_format.left_indent.cm, 2) != 0.45:
+        if not p.paragraph_format.left_indent or round(p.paragraph_format.left_indent.cm, 2) not in (0.45, 0.95):
             bad += 1
     res.append(("8 引用块三属性", OK if qs and bad == 0 else FAIL, f"{len(qs)} 段，异常 {bad}"))
     tb_bad = []
