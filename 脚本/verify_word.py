@@ -47,7 +47,9 @@ def check(path, series="01", weeks=4, edition="第八轮（第8版）"):
     other = colors - {want, "FFFFFF", "888888", "808080", "222222", "1A1A1A", "333333"}
     res.append(("5 配色唯一", OK if not other else FAIL, f"{want} 额外={sorted(other)}"))
     hdr = sec.header.paragraphs[0].text
-    exp_prefix = f"读书会{series} · 第1周 · {edition}（{weeks}周版） · "
+    mw = re.search(r"第(\d+)周", path)
+    wk = mw.group(1) if mw else "1"
+    exp_prefix = f"读书会{series} · 第{wk}周 · {edition}（{weeks}周版） · "
     res.append(("6 页眉文案", OK if hdr.startswith(exp_prefix) and hdr.endswith("主持人版" if not stu else "学员版")
                 else FAIL, hdr))
     flds = re.findall(r"<w:instrText[^>]*>([^<]*)</w:instrText>", sec.footer.paragraphs[0]._p.xml)
@@ -77,6 +79,8 @@ def check(path, series="01", weeks=4, edition="第八轮（第8版）"):
             if ri >= 1 and ri % 2 == 0 and fill != "EEF2F8":
                 tb_bad.append(f"第{ri}行隔行")
     res.append(("9 表格样式", OK if not tb_bad else FAIL, f"{len(d.tables)} 张，异常 {tb_bad}"))
+    numpr = len(re.findall(r"<w:numPr>", d.element.xml))
+    res.append(("10 无自动编号", OK if numpr == 0 else FAIL, f"numPr={numpr}"))
     resid = [p.text[:40] for p in d.paragraphs if re.search(r"\*\*|^#{1,6} |<!--|^\|.*\|$", p.text)]
     resid += [c.text[:30] for t in d.tables for row in t.rows for c in row.cells
               if "**" in c.text or "|" in c.text]

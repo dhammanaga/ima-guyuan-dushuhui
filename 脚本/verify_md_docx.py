@@ -38,11 +38,66 @@ def dequote(line):
     return s.strip()
 
 
+# ---------- 加粗预处理（与 _mk_word_latest.py 必须逐字同逻辑） ----------
+CJK_RE = re.compile(r"[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]")
+
+
+def _merge_text(a, b):
+    a, b = a.rstrip(), b.strip()
+    if not a:
+        return b
+    if not b:
+        return a
+    if CJK_RE.match(a[-1]) and CJK_RE.match(b[0]):
+        return a + b
+    return a + " " + b
+
+
+def _mergeable(t):
+    s = t.strip()
+    if not s:
+        return False
+    if s[0] in "#>|`<":
+        return False
+    if re.match(r"^[-*+] ", s):
+        return False
+    if re.match(r"^\d+\. ", s):
+        return False
+    return True
+
+
+def drop_lone_bold(text):
+    pos = [m.start() for m in re.finditer(r"\*\*", text)]
+    if len(pos) % 2 == 0:
+        return text
+    cut = pos[-1]
+    return text[:cut] + text[cut + 2:]
+
+
+def prep_bold(lines):
+    out, i, n = [], 0, len(lines)
+    while i < n:
+        line = lines[i]
+        if line.count("**") % 2 == 1:
+            while (line.count("**") % 2 == 1 and i + 1 < n
+                   and "**" in lines[i + 1] and _mergeable(lines[i + 1])):
+                line = _merge_text(line, lines[i + 1])
+                i += 1
+            if line.count("**") % 2 == 1:
+                line = drop_lone_bold(line)
+            out.append(line)
+        else:
+            out.append(line)
+        i += 1
+    return out
+
+
 def parse_md(path):
-    lines = open(path, encoding="utf-8").read().split("\n")
+    lines = prep_bold(open(path, encoding="utf-8").read().split("\n"))
     n = len(lines)
     units = []
     i, seen = 0, False
+    seen_heading = False
     while i < n:
         raw = lines[i].rstrip()
         s = raw.strip()
@@ -60,7 +115,7 @@ def parse_md(path):
                         break
                 body = r[pre:].strip().lstrip("·•").strip()
                 if body:
-                    units.append(dict(kind="code", level=min(pre // 4, 4), text=norm(body)))
+                    units.append(dict(kind="code", level=min(pre // 4, 8), text=norm(body)))
                     seen = True
                 i += 1
             i += 1
@@ -85,7 +140,8 @@ def parse_md(path):
         m = re.match(r"^(#{1,6})\s+(.*)$", s)
         if m:
             lvl = len(m.group(1))
-            kind = "h0" if not seen else ("h1" if lvl == 1 else ("h2" if lvl == 2 else "h3"))
+            kind = "h0" if not seen_heading else ("h1" if lvl == 1 else ("h2" if lvl == 2 else "h3"))
+            seen_heading = True
             _t = norm(m.group(2))
             if kind == "h0":
                 _t = _t.replace("（主持人版）", "").replace("（学员版）", "").strip()
@@ -174,7 +230,7 @@ def p_kind(p):
         return dict(kind="ol", num=int(mo.group(1)), text=norm(mo.group(2)))
     if 0.3 <= ind and size in (10, 10.5):
         lvl = int(round((ind - 0.35) / 0.55))
-        if 0 <= lvl <= 4 and abs(ind - (0.35 + 0.55 * lvl)) < 0.06:
+        if 0 <= lvl <= 8 and abs(ind - (0.35 + 0.55 * lvl)) < 0.06:
             return dict(kind="code", level=lvl, text=norm(txt))
     return dict(kind="p", text=norm(txt), bold=any(r.bold for r in runs))
 
