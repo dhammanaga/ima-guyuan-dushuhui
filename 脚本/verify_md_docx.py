@@ -93,7 +93,9 @@ def prep_bold(lines):
 
 
 def parse_md(path):
-    lines = prep_bold(open(path, encoding="utf-8").read().split("\n"))
+    # 行内/行首 HTML 注释一律剥离，与 _mk_word_latest.convert 逐字同逻辑
+    lines = prep_bold([re.sub(r"<!--.*?-->", "", l)
+                       for l in open(path, encoding="utf-8").read().split("\n")])
     n = len(lines)
     units = []
     i, seen = 0, False

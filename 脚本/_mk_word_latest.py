@@ -264,7 +264,10 @@ def prep_bold(lines):
 
 
 def convert(md_path, docx_path, header_text, color, color_hex):
-    lines = prep_bold(open(md_path, encoding="utf-8").read().split("\n"))
+    # 行内/行首 HTML 注释一律剥离（源稿偶见 `<!--EXT_READ-->## 标题` 与「正文<!--/EXT_READ-->」形态，
+    # 按 Markdown 语义注释不渲染；与 verify_md_docx.parse_md 逐字同逻辑）
+    lines = prep_bold([re.sub(r"<!--.*?-->", "", l)
+                       for l in open(md_path, encoding="utf-8").read().split("\n")])
     doc = Document()
 
     sec = doc.sections[0]
