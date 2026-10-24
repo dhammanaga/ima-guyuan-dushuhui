@@ -1,4 +1,4 @@
-<div align="right">📅 最近更新：2026-10-24 22:45　｜第八轮 · Word 规则 v1.1（字体兼容 WPS＋版式重做）</div>
+<div align="right">📅 最近更新：2026-10-24 22:50　｜第八轮 · Word 规则 v1.2（去 Courier、巴利语字体）</div>
 
 # 📝 更新日志 · CHANGELOG（第八轮去禅修引导目录内）
 
@@ -10,6 +10,31 @@
 > 朗读字数口径（§25／§26.4·重写型）：每周各区合计 **6700–8200**；单段 ≤3600（4周版）／**3600–5400（8周版，2026-10-17 令，原 ≤4500 作废）** 仅作参考、不作否决。
 
 ---
+
+---
+
+## 第八轮 · Word 规则 v1.2（去 Courier＋巴利语字体，2026-10-24）
+
+**触发**：用户 WPS 截图显示「1 个文档字体缺失：**Courier**」；并提醒巴利语拼写在部分字体下显示不正常。
+
+**根因**：
+① Courier 来自 Word 内置 `List Bullet` / `List Number` 样式的**符号字体**（numbering.xml 声明），WPS 无此字体即报缺失；
+② 巴利语变音字母（ā ī ū ṅ ñ ṭ ḍ ṇ ḷ ṃ ḥ）在中文字体里覆盖不全——用 fontTools 实测本机 **Noto Serif/Sans CJK（思源系列，多作为 WPS/Linux 的「宋体」替代）缺 14 个**（ṅ ṭ ḍ ṇ ḷ ṃ ḥ 及大写，仅 ā ī ū 有）；DejaVu Serif/Sans 缺 0 个。
+
+**规则变更（v1.1 → v1.2）**：
+
+| # | 项 | v1.1 | v1.2 |
+|---|---|---|---|
+| 1 | 列表实现 | 内置 `List Bullet`／`List Number` | **手写符号**「• 」「N. 」＋悬挂缩进（保留原编号） |
+| 2 | 字体清理 | 仅 theme 的其他语言字体 | **包内全部 XML**：`Courier／Courier New／Symbol／Wingdings／Calibri／Cambria／Arial／等线(DengXian)` → Times New Roman（拉丁）/宋体 |
+| 3 | 巴利语 | 跟随正文字体 | 含 `U+0100–024F`、`U+1E00–1EFF` 的片段**强制 Times New Roman**（只改 ascii/hAnsi/cs，中文仍走 eastAsia） |
+| 4 | 校验 | 12 项 | 12 项 ＋「字体清单只允许 宋体/TNR/雅黑，Courier·Symbol=0」＋「巴利 run 必须 TNR」 |
+
+**样本重出**（读书会01 第1周，4 份，覆盖同名路径）：4周版 22／18 页，8周版 13／10 页；12 项校验全通过；字体名计数实测仅 `Times New Roman`、`宋体`、`微软雅黑`（**Courier/Symbol 已为 0**）；md 残留 0；巴利片段 run 的 `w:ascii` 均为 Times New Roman。
+
+**新增/更新文件**：`文档/规范与手册/读书会Word文档生成规则_20261024_2250_v1.2.md`（v1.1/v1.0 保留）、`脚本/_mk_word_latest.py`（v1.2）、`Word版/README_Word版说明_20261024.md`。
+
+**提交**：`e5a40746`。
 
 ---
 
